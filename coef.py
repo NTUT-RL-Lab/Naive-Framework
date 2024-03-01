@@ -1,6 +1,6 @@
 from typing import List
 # c_ means a coeffiecent
-# Manager's Coef
+# Director's Coef
 '''
  Routine:
  1. Load Coef to Manager
@@ -22,6 +22,7 @@ from typing import List
 '''
 class Coef:
     def __init__(
+        self,
         n_timestep : int, # total training timestemp needed
         c_lr : float, # learning rate
         cap : float,  # everytime reach this cap, switch env
@@ -35,5 +36,16 @@ class Coef:
         seed: int ,
         device: str
     ):
-        pass
+        self.n_timestep = n_timestep
+        self.c_lr = c_lr
+        self.cap = cap
+        self.env_weights = env_weights
+        self.n_envs = n_envs
+        self.env_ids = env_ids
+        self.c_transition_loss = c_transition_loss
+        self.policy = policy
+        self.eval_freq = eval_freq
+        self.eval_episodes = eval_episodes
+        self.seed = seed
+        self.device = device
 
