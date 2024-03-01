@@ -15,7 +15,7 @@ class Facade(Wrapper):
         self.index = 0
         self.envs = envs
         self.coef = coef
-        if (len(envs) ==0):
+        if (len(envs) == 0):
             raise ValueError("No envs provided 😫")
         self.env = envs[0]
         super().__init__(envs[0])
