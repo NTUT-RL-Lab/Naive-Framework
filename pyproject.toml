@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "naive-framework"
+version = "0.0.229"
+description = "A naive RL framework"
+authors = ["huhuhu0420 <ghostcheng.00@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+gymnasium = "^0.29.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
