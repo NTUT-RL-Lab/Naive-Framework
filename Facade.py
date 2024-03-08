@@ -1,9 +1,12 @@
 from gymnasium import Env, logger, Wrapper
 from typing import List
 from director import Director
+
+
 class Facade(Wrapper):
     """Facade class to wrap the environment and provide a single interface to the agent
     """
+
     def __init__(self, envs: List[Env], director: Director) -> None:
         """Constructor for the Facade class
         Args:
@@ -30,10 +33,11 @@ class Facade(Wrapper):
             return
         self.index = index
         self.env = self.envs[index]
+
     def step(self, action):
         """Step function to step the environment
         """
         result = super().step(action)
-        index,  = self.director.Update( result)
-        self.SwitchEnv(index) 
+        index,  = self.director.Update(result)
+        self.SwitchEnv(index)
         return result
