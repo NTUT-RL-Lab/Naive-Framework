@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 gymnasium = "^0.29.1"
+stable-baselines3 = {extras = ["extra"], version = "^2.2.1"}
 
 
 [build-system]
