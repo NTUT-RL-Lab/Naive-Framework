@@ -1,5 +1,5 @@
-from gymnasium import Env, logger, Wrapper
 from typing import List
+from gymnasium import Env, logger, Wrapper
 from director import Director
 
 
@@ -22,7 +22,7 @@ class Facade(Wrapper):
         self.director = director
         super().__init__(envs[0])
 
-    def SwitchEnv(self, index: int) -> None:
+    def switch_env(self, index: int) -> None:
         """Switches the environment to the one at the index
         Args:
             index (int): Index of the environment to switch to
@@ -38,6 +38,6 @@ class Facade(Wrapper):
         """Step function to step the environment
         """
         result = super().step(action)
-        index,  = self.director.Update(result)
-        self.SwitchEnv(index)
+        index,  = self.director.update(result)
+        self.switch_env(index)
         return result

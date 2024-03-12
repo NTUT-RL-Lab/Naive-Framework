@@ -31,9 +31,9 @@ def main():
     envs = [gym.make(env_id) for env_id in coef.env_ids]
     facade = Facade(envs, director=director)
     model = PPO(coef.policy, facade)
-    director.SetModel(model)
+    director.set_model(model)
 
-    director.Learn()
+    director.learn()
     print("Learning done")
 
 
