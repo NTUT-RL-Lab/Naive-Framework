@@ -6,6 +6,7 @@ from gymnasium.wrappers.resize_observation import ResizeObservation
 from coef import Coef
 from facade import Facade
 from stable_baselines3 import *
+from guise import Guise
 
 
 def main():
@@ -44,16 +45,16 @@ def birth_envs(env_ids) -> list[gym.Env]:
     """
     max_w, max_h = 0, 0
     envs = [gym.make(env_id, render_mode="rgb_array") for env_id in env_ids]
-    for env in envs:
-        env = PixelObservationWrapper(env)
-        obs, _ = env.reset()
-        max_w = max(max_w, obs['pixels'].shape[0])
-        max_h = max(max_h, obs['pixels'].shape[1])
-
-        env.observation_space = obs['pixels']
-        print(env.observation_space.shape)
-    for env in envs:
-        env = ResizeObservation(env, (max_w, max_h))
+    for i in range(envs.__len__()):
+        envs[i] = Guise(envs[i])
+        obs = envs[i].observation_space
+        max_w = max(max_w, obs.shape[0])
+        max_h = max(max_h, obs.shape[1])
+    for i in range(envs.__len__()):
+        # magic(observation normalize) happen here 🪄🕊️
+        envs[i].rescale_observation((max_w, max_h))
+        logger.info(
+            f"envs[{i}].observation_space.shape: {envs[i].observation_space.shape}")
     return envs
 
 
