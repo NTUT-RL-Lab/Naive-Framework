@@ -19,6 +19,8 @@ def main():
         env_weights=[0.5, 0.5],
         n_envs=2,
         env_ids=["LunarLander-v2", "CartPole-v1"],
+        act_mapping=[{0: "NOOP", 1: "LEFT", 2: "RIGHT"},
+                     {0: "LEFT", 1: "RIGHT"}],
         # env_ids = ["CartPole-v1" ],
         # n_envs=1,
         c_transition_loss=0.5,
@@ -31,7 +33,7 @@ def main():
     logger.set_level(logger.INFO)
     logger.info("👻")
     director = Director(coef)
-    envs = birth_envs(coef.env_ids)
+    envs = birth_envs(coef.env_ids, coef.act_mapping)
     facade = Facade(envs, director=director)
     model = PPO(coef.policy, facade)
     director.set_model(model)
@@ -40,22 +42,25 @@ def main():
     print("Learning done")
 
 
-def birth_envs(env_ids) -> list[gym.Env]:
+def birth_envs(env_ids, action_mappings: dict[int, str]) -> list[gym.Env]:
     """Births the environments
     """
     max_w, max_h = 0, 0
     envs = [gym.make(env_id, render_mode="rgb_array") for env_id in env_ids]
+    disguises: list[Guise] = []
     for i in range(envs.__len__()):
-        envs[i] = Guise(envs[i])
-        obs = envs[i].observation_space
+        disguises.append(Guise(envs[i]))
+        obs = disguises[i].observation_space
         max_w = max(max_w, obs.shape[0])
         max_h = max(max_h, obs.shape[1])
-    for i in range(envs.__len__()):
+    for i in range(disguises.__len__()):
         # magic(observation normalize) happen here 🪄🕊️
-        envs[i].rescale_observation((max_w, max_h))
+        disguises[i].rescale_observation((max_w, max_h))
+        disguises[i].init_action_mapping(action_mappings[i])
         logger.info(
-            f"envs[{i}].observation_space.shape: {envs[i].observation_space.shape}")
-    return envs
+            f"disguises[{i}].observation_space.shape: {disguises[i].observation_space.shape}")
+
+    return disguises
 
 
 if __name__ == '__main__':
