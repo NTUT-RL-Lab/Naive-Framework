@@ -23,8 +23,6 @@ def main():
         env_ids=["LunarLander-v2", "Acrobot-v1"],
         act_mapping=[{0: "NOOP", 1: "LEFT", 2: "UP",
                       3: "RIGHT"}, {0: "LEFT", 1: "NOOP", 2: "RIGHT"}],
-        # env_ids = ["CartPole-v1" ],
-        # n_envs=1,
         c_transition_loss=0.5,
         policy="MlpPolicy",
         eval_freq=1000,
@@ -42,9 +40,10 @@ def main():
 
     director.learn()
     print("Learning done")
+    director.save("models/v0.1")
 
 
-def birth_envs(env_ids, action_mappings: dict[int, str]) -> list[gym.Env]:
+def birth_envs(env_ids, action_mappings: dict[int, str]) -> list[Guise]:
     """Births the environments
     """
     max_w, max_h = 0, 0
