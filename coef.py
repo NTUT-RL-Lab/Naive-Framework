@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Callable
+import numpy as np
 # c_ means a coeffiecent
 # Director's Coef
 '''
@@ -20,20 +21,24 @@ from typing import List
     vii.  Back to i. if not reach timestep n
     viii. :)
 '''
+
+
 class Coef:
     def __init__(
         self,
-        n_timestep : int, # total training timestemp needed
-        c_lr : float, # learning rate
-        cap : float,  # everytime reach this cap, switch env
-        env_weights: List[float], # each env's importance weight
-        n_envs : int, # number of envs
-        env_ids : List[str],
-        c_transition_loss, 
-        policy : str,
+        n_timestep: int,  # total training timestemp needed
+        c_lr: float,  # learning rate
+        cap: float,  # everytime reach this cap, switch env
+        env_weights: List[float],  # each env's importance weight
+        n_envs: int,  # number of envs
+        env_ids: List[str],
+        # action mapping for each env
+        act_mapping: List[dict[int, str]] | Callable[[np.ndarray], np.ndarray | int],
+        c_transition_loss,
+        policy: str,
         eval_freq: int,
         eval_episodes: int,
-        seed: int ,
+        seed: int,
         device: str
     ):
         self.n_timestep = n_timestep
@@ -43,9 +48,9 @@ class Coef:
         self.n_envs = n_envs
         self.env_ids = env_ids
         self.c_transition_loss = c_transition_loss
+        self.act_mapping = act_mapping
         self.policy = policy
         self.eval_freq = eval_freq
         self.eval_episodes = eval_episodes
         self.seed = seed
         self.device = device
-
