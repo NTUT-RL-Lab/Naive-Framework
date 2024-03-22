@@ -16,7 +16,7 @@ if __name__ == '__main__':
         c_lr=0.0001,
         cap=1000,
         env_weights=[0.5, 0.5],
-        n_envs=2,
+        n_envs=1,
         env_ids=["LunarLander-v2"],
         act_mapping=[{0: "NOOP", 1: "LEFT", 2: "UP",
                       3: "RIGHT"}],
@@ -42,9 +42,11 @@ if __name__ == '__main__':
         vec_env.render("human")
         if dones:
             break
-    # no fancy evaluation for now
-    # std, mean = evaluate_policy(model, envs[0], n_eval_episodes=1000)
-    # print(f"mean: {mean}, std: {std}")
+    vec_env.close()
+    vec_env.reset()
+    # yes fancy evaluation for now
+    std, mean = evaluate_policy(model, vec_env, n_eval_episodes=1000)
+    print(f"mean: {mean}, std: {std}")
 
     # no parser for now
     # parser = argparse.ArgumentParser()
