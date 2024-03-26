@@ -1,4 +1,4 @@
-n_timestep = 1000                          # total training timesteps needed
+n_timestep = 10000                         # total training timesteps needed
 c_lr = 0.01                                # learning rate
 cap = 100.0                                # cap for environment switching
 c_transition_loss = 0.5                    # transition loss coefficient

@@ -1,5 +1,6 @@
 from typing import List, Callable
 import numpy as np
+import tomllib
 # c_ means a coeffiecent
 # Director's Coef
 '''
@@ -54,3 +55,32 @@ class Coef:
         self.eval_episodes = eval_episodes
         self.seed = seed
         self.device = device
+
+    def __init__(self, config_file: str):
+        # load from file
+        with open(config_file, "rb") as f:
+            config = tomllib.load(f)
+
+        self.n_timestep = config["n_timestep"]
+        self.c_lr = config["c_lr"]
+        self.cap = config["cap"]
+        self.env_weights = config["env_weights"]
+        self.env_ids = config["env_ids"]
+        self.c_transition_loss = config["c_transition_loss"]
+        self.policy = config["policy"]
+        self.eval_freq = config["eval_freq"]
+        self.eval_episodes = config["eval_episodes"]
+        self.seed = config["seed"]
+        self.device = config["device"]
+        self.env_weights = config["env_weights"]
+        self.n_envs = len(self.env_ids)
+
+        mappings_path = "config/mappings.toml"
+
+        self.act_mapping = []
+        with open(mappings_path, "rb") as f:
+            mappings = tomllib.load(f)
+            for env_id in self.env_ids:
+                # change key type to int
+                self.act_mapping.append(
+                    {int(k): v for k, v in mappings[env_id].items()})
