@@ -8,9 +8,16 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-gymnasium = "^0.29.1"
+gymnasium = {extras = ["box2d"], version = "^0.29.1"}
 stable-baselines3 = {extras = ["extra"], version = "^2.2.1"}
+torchvision = {version = "^0.16.2+cu121", source = "pytorch-gpu-src"}
+torchaudio = {version = "^2.1.2+cu121", source = "pytorch-gpu-src"}
+torch = {version = "^2.1.2+cu121", source = "pytorch-gpu-src"}
 
+[[tool.poetry.source]]
+name = "pytorch-gpu-src"
+url = "https://download.pytorch.org/whl/cu121"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]

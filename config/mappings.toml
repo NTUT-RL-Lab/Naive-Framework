@@ -1,0 +1,11 @@
+
+[LunarLander-v2]
+0 = "NOOP"
+1 = "LEFT"
+2 = "UP"
+3 = "RIGHT"
+
+[Acrobot-v1]
+0 = "LEFT"
+1 = "NOOP"
+2 = "RIGHT"
