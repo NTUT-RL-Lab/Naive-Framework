@@ -53,3 +53,8 @@ class Director():
         mean_reward, std_reward = evaluate_policy(
             evalModel, self.exp_envs[env_id], n_eval_episodes=episodes)
         return mean_reward, std_reward
+
+    def save(self, path: str) -> None:
+        """Saves the model
+        """
+        self.model.save(path)
