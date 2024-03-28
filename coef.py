@@ -1,3 +1,4 @@
+import stat
 from typing import List, Callable
 import numpy as np
 import tomllib
@@ -25,8 +26,10 @@ import tomllib
 
 
 class Coef:
-    def __init__(
-        self,
+    """Coefficient class to store hyperparameters
+    """
+    @staticmethod
+    def from_data(
         n_timestep: int,  # total training timestemp needed
         c_lr: float,  # learning rate
         cap: float,  # everytime reach this cap, switch env
@@ -42,21 +45,41 @@ class Coef:
         seed: int,
         device: str
     ):
-        self.n_timestep = n_timestep
-        self.c_lr = c_lr
-        self.cap = cap
-        self.env_weights = env_weights
-        self.n_envs = n_envs
-        self.env_ids = env_ids
-        self.c_transition_loss = c_transition_loss
-        self.act_mapping = act_mapping
-        self.policy = policy
-        self.eval_freq = eval_freq
-        self.eval_episodes = eval_episodes
-        self.seed = seed
-        self.device = device
+        """
+        Args:
+            n_timestep (int): total training timestemp needed
+            c_lr (float): learning rate
+            cap (float): everytime reach this cap, switch env
+            env_weights (List[float]): each env's importance weight
+            n_envs (int): number of envs
+            env_ids (List[str]): envs' ids
+            act_mapping (List[dict[int, str]] | Callable[[np.ndarray], np.ndarray | int]): action mapping for each env
+            c_transition_loss: 
+            policy (str): 
+            eval_freq (int): 
+            eval_episodes (int): 
+            seed (int): 
+            device (str):
+        """
+        coef = Coef()
+        coef.n_timestep = n_timestep
+        coef.c_lr = c_lr
+        coef.cap = cap
+        coef.env_weights = env_weights
+        coef.n_envs = n_envs
+        coef.env_ids = env_ids
+        coef.c_transition_loss = c_transition_loss
+        coef.act_mapping = act_mapping
+        coef.policy = policy
+        coef.eval_freq = eval_freq
+        coef.eval_episodes = eval_episodes
+        coef.seed = seed
+        coef.device = device
+        return coef
 
-    def __init__(self, config_file: str):
+    def __init__(self, config_file: str = None):
+        if config_file is None:
+            return
         # load from file
         with open(config_file, "rb") as f:
             config = tomllib.load(f)
