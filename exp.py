@@ -36,7 +36,7 @@ def main():
     director = Director(coef)
     envs = birth_envs(coef.env_ids, coef.act_mapping)
     facade = Facade(envs, director=director)
-    model = PPO(coef.policy, facade)
+    model = PPO(coef.policy, facade, tensorboard_log="logs/")
     director.set_model(model)
 
     director.learn()
