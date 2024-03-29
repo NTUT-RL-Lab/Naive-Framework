@@ -43,12 +43,10 @@ def eval_model(coef: Coef, model_path, episodes=1000,  render=False):
     model = PPO(coef.policy, facade)
     model.load(model_path)
     vec_env = model.get_env()
-    if render:
-        render_env(model, episodes)
-        logger.info("rendering done")
     vec_env.reset()
     # yes fancy evaluation for now
-    std, mean = evaluate_policy(model, vec_env, n_eval_episodes=episodes)
+    std, mean = evaluate_policy(
+        model, vec_env, n_eval_episodes=episodes, render=True)
     print(f"mean: {mean}, std: {std}")
     return mean, std
 
@@ -68,15 +66,15 @@ def render_env(model, episodes=1000):
 
 
 if __name__ == '__main__':
-    pass
-
-    # no parser for now
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("--model", type=str, required=True)
-    # parser.add_argument("--env", type=str, required=True)
-    # args = parser.parse_args()
-    # model = PPO.load(args.model)
-    # env = gym.make(args.env, render_mode= "human")
-    # observation, info = env.reset()
-    # mean, std = evaluate_policy(model, env, n_eval_episodes=1000)
-    # print(f"mean: {mean}, std: {std}")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--config", type=str, required=True)
+    parser.add_argument("--env_id", type=int, default=-1,
+                        help="environment id to evaluate", required=False)
+    parser.add_argument("--episodes", type=int, default=10,
+                        help="number of episodes to evaluate", required=False)
+    parser.add_argument("--render", type=bool, default=False,
+                        help="render the evaluation", required=False)
+    args = parser.parse_args()
+    eval_exp("config/"+args.config, "models/"+args.model,
+             args.env_id, args.episodes, args.render)
