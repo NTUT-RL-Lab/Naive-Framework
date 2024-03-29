@@ -8,29 +8,19 @@ from facade import Facade
 from stable_baselines3 import *
 from guise import Guise
 import numpy as np
+import argparse
 
 
 def main():
     """Main function to run the experiment
     """
 
-    # coef = Coef(
-    #     n_timestep=10000,
-    #     c_lr=0.0001,
-    #     cap=1000,
-    #     env_weights=[0.5, 0.5],
-    #     n_envs=2,
-    #     env_ids=["LunarLander-v2", "Acrobot-v1"],
-    #     act_mapping=[{0: "NOOP", 1: "LEFT", 2: "UP",
-    #                   3: "RIGHT"}, {0: "LEFT", 1: "NOOP", 2: "RIGHT"}],
-    #     c_transition_loss=0.5,
-    #     policy="MlpPolicy",
-    #     eval_freq=1000,
-    #     eval_episodes=1000,
-    #     seed=123,
-    #     device="cuda"
-    # )
-    coef = Coef("config/exp0.toml")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--config", type=str, required=True)
+    args = parser.parse_args()
+
+    coef = Coef("config/" + args.config)
     logger.set_level(logger.INFO)
     logger.info("👻")
     director = Director(coef)
@@ -41,7 +31,7 @@ def main():
 
     director.learn()
     print("Learning done")
-    director.save("models/v0.1")
+    director.save("models/" + args.model)
 
 
 def birth_envs(env_ids, action_mappings: dict[int, str]) -> list[Guise]:
