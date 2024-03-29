@@ -1,3 +1,4 @@
+from copy import deepcopy
 import re
 from stable_baselines3 import *
 import gymnasium as gym
@@ -10,43 +11,64 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from guise import Guise
 from coef import Coef
 # load model and evaluate
-if __name__ == '__main__':
-    coef = Coef(
-        n_timestep=10000,
-        c_lr=0.0001,
-        cap=1000,
-        env_weights=[0.5, 0.5],
-        n_envs=1,
-        env_ids=["LunarLander-v2"],
-        act_mapping=[{0: "NOOP", 1: "LEFT", 2: "UP",
-                      3: "RIGHT"}],
-        c_transition_loss=0.5,
-        policy="MlpPolicy",
-        eval_freq=1000,
-        eval_episodes=1000,
-        seed=123,
-        device="cuda"
-    )
+
+
+def eval_exp(config_path, model_path, env_id=-1, episodes=1000,  render=False):
+    """Evaluates the experiment
+    """
+    coef = Coef(config_path)
     logger.set_level(logger.INFO)
-    logger.info("👻")
+    if env_id == -1:
+        logger.info("evaluating all envs")
+        for i in range(coef.n_envs):
+            _coef = deepcopy(coef)
+            _coef.env_ids = [coef.env_ids[i]]
+            _coef.act_mapping = [coef.act_mapping[i]]
+            _coef.n_envs = 1
+            eval_model(_coef, model_path, episodes, render)
+    else:
+        logger.info(f"evaluating env {env_id}")
+        coef.env_ids = [coef.env_ids[env_id]]
+        coef.act_mapping = [coef.act_mapping[env_id]]
+        coef.n_envs = 1
+        eval_model(coef, model_path, episodes, render)
+
+
+def eval_model(coef: Coef, model_path, episodes=1000,  render=False):
+    """Evaluates the model
+    """
     director = Director(coef)
     envs = birth_envs(coef.env_ids, coef.act_mapping)
     facade = Facade(envs, director=director)
     model = PPO(coef.policy, facade)
-    model.load("models/v0.1")
+    model.load(model_path)
+    vec_env = model.get_env()
+    if render:
+        render_env(model, episodes)
+        logger.info("rendering done")
+    vec_env.reset()
+    # yes fancy evaluation for now
+    std, mean = evaluate_policy(model, vec_env, n_eval_episodes=episodes)
+    print(f"mean: {mean}, std: {std}")
+    return mean, std
+
+
+def render_env(model, episodes=1000):
+    """Renders the environment
+    """
     vec_env = model.get_env()
     obs = vec_env.reset()
-    while True:
+    for _ in range(episodes):
         action, _states = model.predict(obs)
         obs, rewards, dones, info = vec_env.step(action)
         vec_env.render("human")
         if dones:
             break
     vec_env.close()
-    vec_env.reset()
-    # yes fancy evaluation for now
-    std, mean = evaluate_policy(model, vec_env, n_eval_episodes=1000)
-    print(f"mean: {mean}, std: {std}")
+
+
+if __name__ == '__main__':
+    pass
 
     # no parser for now
     # parser = argparse.ArgumentParser()
