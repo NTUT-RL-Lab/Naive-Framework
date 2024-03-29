@@ -8,18 +8,22 @@ from typing import Callable
 
 
 class Guise(PixelObservationWrapper):
+    """Guise class to wrap the environment and provide a single interface to the agent
+    """
+
     def __init__(self, env: Env) -> None:
         super().__init__(
             env
         )
         self.observation_space = self.observation_space['pixels']
         self.shape = (0, 0)
-        # do we really need a pad? :thinking:
         self.ops_n = OPS_N
         self.mapping = {}
         self.origin_space = -1
 
     def rescale_observation(self, shape: tuple[int, int] | int):
+        """Rescale the observation space
+        """
         if isinstance(shape, int):
             shape = (shape, shape)
         assert len(shape) == 2 and all(
@@ -31,6 +35,8 @@ class Guise(PixelObservationWrapper):
             low=0, high=255, shape=obs_shape, dtype=np.uint8)
 
     def init_action_mapping(self, mapping: dict[int, str] | Callable[[np.ndarray], np.ndarray | int], origin_space):
+        """Initialize the action mapping
+        """
         if callable(mapping):
             self.map_action = mapping
         else:
