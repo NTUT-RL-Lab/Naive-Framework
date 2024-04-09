@@ -25,12 +25,14 @@ class Guise(PixelObservationWrapper):
         """Rescale the observation space
         """
         if isinstance(shape, int):
-            shape = (shape, shape)
-        assert len(shape) == 2 and all(
+            shape = (shape, shape, 1)
+        else:
+            shape = (shape[0], shape[1], 1)
+        assert len(shape) == 3 and all(
             x > 0 for x in shape
         ), f"Expected shape to be a 2-tuple of positive integers, got: {shape}"
-        self.shape = tuple(shape)
-        obs_shape = self.shape + self.observation_space.shape[2:]
+        obs_shape = tuple(shape)
+        self.shape = obs_shape
         self.observation_space = gym.spaces.Box(
             low=0, high=255, shape=obs_shape, dtype=np.uint8)
 
@@ -38,21 +40,16 @@ class Guise(PixelObservationWrapper):
         """Initialize the action mapping
         """
         if callable(mapping):
-            self.map_action = mapping
+            pass
+            # self.map_action = mapping
         else:
-            if len(mapping) != self.action_space.n:
-                raise ValueError(
-                    f"Expected mapping to have length {self.action_space.n}, got {len(mapping)}")
-            for key, value in mapping.items():
-                try:
-                    self.mapping[Ops.__members__[value]] = key
-                except KeyError:
-                    raise ValueError(f"Invalid operation {value}")
+            self.mapping = mapping
         self.origin_space = origin_space
         # hardcoded to discrete for now
-        self.action_space = spaces.Discrete(self.ops_n)
+        self.action_space = spaces.Discrete(len(self.mapping))
 
     def map_action(self, action: np.ndarray | int) -> np.ndarray | int:
+        return action
         if isinstance(action, (np.int64, int)):
             if action in self.mapping:
                 return self.mapping[action]
@@ -61,9 +58,9 @@ class Guise(PixelObservationWrapper):
             except KeyError:
                 raise ValueError(f"No NOOP mapping defined 🤷")
         actions = np.zeros(self.origin_space)
-        for id, value in enumerate(action):
-            if id in self.mapping:
-                actions[self.mapping[id]] = value
+        for eid, value in enumerate(action):
+            if eid in self.mapping:
+                actions[self.mapping[eid]] = value
         return actions
 
     def observation(self, observation):
@@ -74,7 +71,9 @@ class Guise(PixelObservationWrapper):
             raise DependencyNotInstalled(
                 "opencv (cv2) is not installed, run `pip install gymnasium[other]`"
             ) from e
+        # resize and grayscale
         observation = cv2.resize(
-            obs, self.shape[::-1], interpolation=cv2.INTER_AREA
-        )
+            cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY), self.shape[1::-1])
+        # save the image
+        cv2.imwrite("logs/image.png", observation)
         return observation.reshape(self.observation_space.shape)
