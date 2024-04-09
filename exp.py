@@ -42,20 +42,20 @@ def birth_envs(env_ids, action_mappings: dict[int, str]) -> list[Guise]:
     disguises: list[Guise] = []
     for i in range(envs.__len__()):
         disguises.append(Guise(envs[i]))
-        obs = disguises[i].observation_space
-        max_w = max(max_w, obs.shape[0])
-        max_h = max(max_h, obs.shape[1])
+    #     obs = disguises[i].observation_space
+    #     max_w = max(max_w, obs.shape[0])
+    #     max_h = max(max_h, obs.shape[1])
     all_actions = {}
     cid = 0
+    # hardcode shape for now
+    # max_w, max_h = 84, 84
     for i in range(disguises.__len__()):
-        # magic(observation normalize) happen here 🪄🕊️
-        disguises[i].rescale_observation((max_w, max_h))
+        #     # magic(observation normalize) happen here 🪄🕊️
+        #     # disguises[i].rescale_observation((max_w, max_h))
         for action in action_mappings[i].values():
             if action not in all_actions:
                 all_actions[action] = cid
                 cid += 1
-        # disguises[i].init_action_mapping(
-        #     action_mappings[i], origin_space=disguises[i].action_space.n)
         logger.info(
             f"disguises[{i}].observation_space.shape: {disguises[i].observation_space.shape}")
     logger.info(f"all_actions: {all_actions}")
@@ -68,8 +68,9 @@ def birth_envs(env_ids, action_mappings: dict[int, str]) -> list[Guise]:
                     break
             else:
                 mapping[value] = all_actions["NOOP"]
-        # disguises[i].init_action_mapping(
-        #     mapping, origin_space=disguises[i].action_space.n)
+        logger.info(f"mapping for disguises[{i}]: {mapping}")
+        disguises[i].init_action_mapping(
+            mapping, origin_space=disguises[i].action_space.n)
     return disguises
 
 

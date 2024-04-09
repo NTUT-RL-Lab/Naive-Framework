@@ -13,9 +13,11 @@ class Guise(PixelObservationWrapper):
 
     def __init__(self, env: Env) -> None:
         super().__init__(
-            env
+            env,
+            pixels_only=False,  # Hardcoded for now
         )
-        self.observation_space = self.observation_space['pixels']
+        # self.observation_space = self.observation_space['pixels']
+        self.observation_space = self.observation_space['state']
         self.shape = (0, 0)
         self.ops_n = OPS_N
         self.mapping = {}
@@ -25,10 +27,10 @@ class Guise(PixelObservationWrapper):
         """Rescale the observation space
         """
         if isinstance(shape, int):
-            shape = (shape, shape, 1)
+            shape = (shape, shape)
         else:
-            shape = (shape[0], shape[1], 1)
-        assert len(shape) == 3 and all(
+            shape = (shape[0], shape[1])
+        assert len(shape) == 2 and all(
             x > 0 for x in shape
         ), f"Expected shape to be a 2-tuple of positive integers, got: {shape}"
         obs_shape = tuple(shape)
@@ -49,7 +51,6 @@ class Guise(PixelObservationWrapper):
         self.action_space = spaces.Discrete(len(self.mapping))
 
     def map_action(self, action: np.ndarray | int) -> np.ndarray | int:
-        return action
         if isinstance(action, (np.int64, int)):
             if action in self.mapping:
                 return self.mapping[action]
@@ -64,7 +65,12 @@ class Guise(PixelObservationWrapper):
         return actions
 
     def observation(self, observation):
-        obs = super().observation(observation)['pixels']
+        # obs = super().observation(observation)['pixels']
+        obs = super().observation(observation)
+        obs_img = obs['pixels']
+        import cv2
+        cv2.imwrite("logs/image.png", obs_img)
+        return obs['state']
         try:
             import cv2
         except ImportError as e:
