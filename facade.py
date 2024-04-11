@@ -1,5 +1,6 @@
 from typing import List
 from gymnasium import Env, logger, Wrapper
+from matplotlib.pylab import f
 from director import Director
 from guise import Guise
 
@@ -32,6 +33,7 @@ class Facade(Wrapper):
             raise ValueError("Invalid index provided")
         if (index == self.index):
             return
+        logger.info(f"Switching to env {index}")
         self.index = index
         self.env = self.envs[index]
 
