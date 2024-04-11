@@ -16,8 +16,8 @@ class Guise(PixelObservationWrapper):
             env,
             pixels_only=False,  # Hardcoded for now
         )
-        # self.observation_space = self.observation_space['pixels']
-        self.observation_space = self.observation_space['state']
+        self.observation_space = self.observation_space['pixels']
+        # self.observation_space = self.observation_space['state']
         self.shape = (0, 0)
         self.ops_n = OPS_N
         self.mapping = {}
@@ -27,10 +27,10 @@ class Guise(PixelObservationWrapper):
         """Rescale the observation space
         """
         if isinstance(shape, int):
-            shape = (shape, shape)
+            shape = (shape, shape, 1)
         else:
-            shape = (shape[0], shape[1])
-        assert len(shape) == 2 and all(
+            shape = (shape[0], shape[1], 1)
+        assert len(shape) == 3 and all(
             x > 0 for x in shape
         ), f"Expected shape to be a 2-tuple of positive integers, got: {shape}"
         obs_shape = tuple(shape)
@@ -67,10 +67,10 @@ class Guise(PixelObservationWrapper):
     def observation(self, observation):
         # obs = super().observation(observation)['pixels']
         obs = super().observation(observation)
-        obs_img = obs['pixels']
-        import cv2
-        cv2.imwrite("logs/image.png", obs_img)
-        return obs['state']
+        # obs_img = obs['pixels']
+        # import cv2
+        # cv2.imwrite("logs/image.png", obs_img)
+        # return obs['state']
         try:
             import cv2
         except ImportError as e:
@@ -79,7 +79,7 @@ class Guise(PixelObservationWrapper):
             ) from e
         # resize and grayscale
         observation = cv2.resize(
-            cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY), self.shape[1::-1])
+            cv2.cvtColor(obs['pixels'], cv2.COLOR_RGB2GRAY), self.shape[1::-1])
         # save the image
-        cv2.imwrite("logs/image.png", observation)
+        # cv2.imwrite("logs/image.png", observation)
         return observation.reshape(self.observation_space.shape)

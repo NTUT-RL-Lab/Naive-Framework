@@ -48,10 +48,10 @@ def birth_envs(env_ids, action_mappings: dict[int, str]) -> list[Guise]:
     all_actions = {}
     cid = 0
     # hardcode shape for now
-    # max_w, max_h = 84, 84
+    max_w, max_h = 84, 84
     for i in range(disguises.__len__()):
-        #     # magic(observation normalize) happen here 🪄🕊️
-        #     # disguises[i].rescale_observation((max_w, max_h))
+        # magic(observation normalize) happen here 🪄🕊️
+        disguises[i].rescale_observation((max_w, max_h))
         for action in action_mappings[i].values():
             if action not in all_actions:
                 all_actions[action] = cid

@@ -9,3 +9,17 @@
 0 = "LEFT"
 1 = "NOOP"
 2 = "RIGHT"
+
+["ALE/Breakout-v5"]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+
+["ALE/SpaceInvaders-v5"]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+4 = "RIGHTFIRE"
+5 = "LEFTFIRE"
