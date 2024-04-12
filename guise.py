@@ -22,6 +22,7 @@ class Guise(PixelObservationWrapper):
         self.ops_n = OPS_N
         self.mapping = {}
         self.origin_space = -1
+        self.reward_coef = 1.0
 
     def rescale_observation(self, shape: tuple[int, int] | int):
         """Rescale the observation space
@@ -49,6 +50,11 @@ class Guise(PixelObservationWrapper):
         self.origin_space = origin_space
         # hardcoded to discrete for now
         self.action_space = spaces.Discrete(len(self.mapping))
+
+    def init_reward_coef(self, reward_coef: float):
+        """Initialize the reward coefficient
+        """
+        self.reward_coef = reward_coef
 
     def map_action(self, action: np.ndarray | int) -> np.ndarray | int:
         if isinstance(action, (np.int64, int)):
@@ -79,7 +85,10 @@ class Guise(PixelObservationWrapper):
             ) from e
         # resize and grayscale
         observation = cv2.resize(
-            cv2.cvtColor(obs['pixels'], cv2.COLOR_RGB2GRAY), self.shape[1::-1])
+            cv2.cvtColor(obs['pixels'], cv2.COLOR_RGB2GRAY), self.shape[1::-1], interpolation=cv2.INTER_AREA)
         # save the image
         # cv2.imwrite("logs/image.png", observation)
         return observation.reshape(self.observation_space.shape)
+
+    def reward(self, reward):
+        return reward * self.reward_coef

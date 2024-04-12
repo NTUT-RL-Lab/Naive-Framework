@@ -40,7 +40,12 @@ class Facade(Wrapper):
     def step(self, action):
         """Step function to step the environment
         """
-        result = super().step(self.env.map_action(action))
-        index,  = self.director.update(result)
+        observation, reward, terminated, truncated, info = super().step(
+            self.env.map_action(action))
+        # apply reward weights
+        reward = self.env.reward(reward)
+
+        index,  = self.director.update(
+            observation, reward, terminated, truncated, info)
         self.switch_env(index)
-        return result
+        return observation, reward, terminated, truncated, info

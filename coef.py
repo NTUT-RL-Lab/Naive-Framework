@@ -97,13 +97,15 @@ class Coef:
         self.device = config["device"]
         self.env_weights = config["env_weights"]
         self.n_envs = len(self.env_ids)
-
-        mappings_path = "config/mappings.toml"
+        mappings_path = "config/env_info.toml"
 
         self.act_mapping = []
+        self.rnd_score = []
         with open(mappings_path, "rb") as f:
-            mappings = tomllib.load(f)
+            env_info = tomllib.load(f)
             for env_id in self.env_ids:
+                rnd = env_info[env_id]["info"]["rnd_score"] if "rnd_score" in env_info[env_id]["info"] else 1
+                self.rnd_score.append(rnd)
                 # change key type to int
                 self.act_mapping.append(
-                    {int(k): v for k, v in mappings[env_id].items()})
+                    {int(k): v for k, v in env_info[env_id]["mappings"].items()})
