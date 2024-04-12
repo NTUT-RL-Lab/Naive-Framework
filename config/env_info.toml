@@ -1,25 +1,33 @@
 
 [LunarLander-v2]
+[LunarLander-v2.mappings]
 0 = "NOOP"
 1 = "LEFT"
 2 = "UP"
 3 = "RIGHT"
 
 [Acrobot-v1]
+[Acrobot-v1.mappings]
 0 = "LEFT"
 1 = "NOOP"
 2 = "RIGHT"
 
 ["ALE/Breakout-v5"]
+["ALE/Breakout-v5".mappings]
 0 = "NOOP"
 1 = "FIRE"
 2 = "RIGHT"
 3 = "LEFT"
+["ALE/Breakout-v5".info]
+rnd_score = 1.7
 
 ["ALE/SpaceInvaders-v5"]
+["ALE/SpaceInvaders-v5".mappings]
 0 = "NOOP"
 1 = "FIRE"
 2 = "RIGHT"
 3 = "LEFT"
 4 = "RIGHTFIRE"
 5 = "LEFTFIRE"
+["ALE/SpaceInvaders-v5".info]
+rnd_score = 148.0
