@@ -31,3 +31,14 @@ rnd_score = 1.7
 5 = "LEFTFIRE"
 ["ALE/SpaceInvaders-v5".info]
 rnd_score = 148.0
+
+["ALE/Galaxian-v5"]
+["ALE/Galaxian-v5".mappings]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+4 = "RIGHTFIRE"
+5 = "LEFTFIRE"
+["ALE/Galaxian-v5".info]
+rnd_score = 165.0
