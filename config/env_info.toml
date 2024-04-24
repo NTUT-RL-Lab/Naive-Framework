@@ -42,3 +42,27 @@ rnd_score = 148.0
 5 = "LEFTFIRE"
 ["ALE/Galaxian-v5".info]
 rnd_score = 165.0
+
+["ALE/DemonAttack-v5"]
+["ALE/DemonAttack-v5".mappings]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+4 = "RIGHTFIRE"
+5 = "LEFTFIRE"
+["ALE/DemonAttack-v5".info]
+rnd_score = 152.1
+
+["ALE/Phoenix-v5"]
+["ALE/Phoenix-v5".mappings]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+4 = "DOWN"
+5 = "RIGHTFIRE"
+6 = "LEFTFIRE"
+7 = "DOWNFIRE"
+["ALE/Phoenix-v5".info]
+rnd_score = 761.4
