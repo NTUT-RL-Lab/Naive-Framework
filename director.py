@@ -8,6 +8,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from coef import Coef
 from typing import Any
 import numpy as np
+import re
 
 
 class Director():
@@ -28,6 +29,10 @@ class Director():
         self.rnd_score = coef.rnd_score  # random score for each env
         self.model: BaseAlgorithm = None
         self.model_class: BaseAlgorithm = None
+        self.exp_name = ""
+        for env_id in self.env_ids:
+            self.exp_name += re.sub('[^0-9a-zA-Z]+', '_', env_id) + "_"
+        self.exp_name += f"{self.n_timestep//1_000_000}M_{self.c_lr}_{self.cap}"
 
     def set_model(self, model: BaseAlgorithm) -> None:
         """Sets the model to be used for learning"""
@@ -35,7 +40,8 @@ class Director():
         self.model_class = model.__class__
 
     def learn(self) -> None:
-        self.model.learn(total_timesteps=self.n_timestep, progress_bar=True)
+        self.model.learn(total_timesteps=self.n_timestep,
+                         progress_bar=True, tb_log_name=self.exp_name)
 
     # env_id
     def update(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
