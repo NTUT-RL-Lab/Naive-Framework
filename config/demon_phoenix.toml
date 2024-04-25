@@ -1,6 +1,6 @@
 n_timestep = 11000000                              # total training timesteps needed
 c_lr = 0.01                                        # learning rate
-cap = 20000                                        # cap for environment switching
+cap = 3.1                                          # cap for environment switching
 c_transition_loss = 0.5                            # transition loss coefficient
 policy = "CnnPolicy"                               # policy identifier
 eval_freq = 10                                     # evaluation frequency

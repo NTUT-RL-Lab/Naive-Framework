@@ -25,6 +25,7 @@ class Director():
         self.c_transition_loss = coef.c_transition_loss
         self.policy = coef.policy
         self.env_steps = [0] * self.n_envs
+        self.cumulative_reward = [0] * self.n_envs
         self.action_mappings = coef.act_mapping
         self.rnd_score = coef.rnd_score  # random score for each env
         self.model: BaseAlgorithm = None
@@ -46,13 +47,18 @@ class Director():
     # env_id
     def update(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
         self.env_steps[self.env_id] += 1
+        # algorithm 2
+        self.cumulative_reward[self.env_id] += reward
         if "👻" == "🎃":
             mean, std = self.eval(env_id=self.env_id, episodes=10)
             if (mean > 10):  # arbitrary value
                 self.env_id = (self.env_id + 1) % self.n_envs
-        if (self.env_steps[self.env_id] > self.cap):
-            self.env_steps[self.env_id] = 0
-            self.env_id = (self.env_id + 1) % self.n_envs
+        worst = np.argmin(self.cumulative_reward)
+        if self.cumulative_reward[self.env_id] - self.cumulative_reward[worst] > self.cap:
+            self.env_id = worst
+        # if (self.env_steps[self.env_id] > self.cap):
+        #     self.env_steps[self.env_id] = 0
+        #     self.env_id = (self.env_id + 1) % self.n_envs
         # logger.info(f"env_id: {self.env_id}")
         return (self.env_id,)
 
