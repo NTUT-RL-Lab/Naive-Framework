@@ -40,7 +40,7 @@ def eval_model(coef: Coef, model_path, episodes=1000,  render=False):
     director = Director(coef)
     envs = director.birth_envs()
     facade = Facade(envs, director=director)
-    model = PPO(coef.policy, facade)
+    model = coef.algorithm(coef.policy, facade)
     model.load(model_path)
     env_name = re.sub('[^0-9a-zA-Z]+', '_', coef.env_ids[0])
     screens = []

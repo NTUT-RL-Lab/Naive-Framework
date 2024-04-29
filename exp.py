@@ -27,7 +27,7 @@ def main():
     director = Director(coef)
     envs = director.birth_envs()
     facade = Facade(envs, director=director)
-    model = PPO(coef.policy, facade, tensorboard_log="logs/")
+    model = coef.algorithm(coef.policy, facade, tensorboard_log="logs/")
     director.set_model(model)
 
     director.learn()

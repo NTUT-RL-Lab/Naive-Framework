@@ -32,7 +32,7 @@ class Director():
         self.exp_name = ""
         for env_id in self.env_ids:
             self.exp_name += re.sub('[^0-9a-zA-Z]+', '_', env_id) + "_"
-        self.exp_name += f"{self.n_timestep//1_000_000}M_{self.c_lr}_{self.cap}"
+        self.exp_name += f"{self.coef.algorithm.__name__}_{self.n_timestep//1_000_000}M_{self.c_lr}_{self.cap}"
 
     def set_model(self, model: BaseAlgorithm) -> None:
         """Sets the model to be used for learning"""

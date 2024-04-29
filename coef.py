@@ -2,6 +2,8 @@ import stat
 from typing import List, Callable
 import numpy as np
 import tomllib
+from stable_baselines3 import *
+from stable_baselines3.common.base_class import BaseAlgorithm
 # c_ means a coeffiecent
 # Director's Coef
 '''
@@ -40,6 +42,7 @@ class Coef:
         act_mapping: List[dict[int, str]] | Callable[[np.ndarray], np.ndarray | int],
         c_transition_loss,
         policy: str,
+        algorithm: str,
         eval_freq: int,
         eval_episodes: int,
         seed: int,
@@ -70,6 +73,7 @@ class Coef:
         coef.env_ids = env_ids
         coef.c_transition_loss = c_transition_loss
         coef.act_mapping = act_mapping
+        coef.algorithm = algorithm
         coef.policy = policy
         coef.eval_freq = eval_freq
         coef.eval_episodes = eval_episodes
@@ -90,6 +94,16 @@ class Coef:
         self.env_weights = config["env_weights"]
         self.env_ids = config["env_ids"]
         self.c_transition_loss = config["c_transition_loss"]
+        algo_map: dict[str, BaseAlgorithm] = {
+            "PPO": PPO,
+            "DQN": DQN,
+            "SAC": SAC,
+            "TD3": TD3,
+            "A2C": A2C,
+            "DDPG": DDPG
+        }
+        self.algorithm = algo_map[config["algorithm"]
+                                  ] if config["algorithm"] in algo_map else PPO
         self.policy = config["policy"]
         self.eval_freq = config["eval_freq"]
         self.eval_episodes = config["eval_episodes"]
