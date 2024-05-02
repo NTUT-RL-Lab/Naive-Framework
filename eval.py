@@ -52,6 +52,8 @@ def eval_model(coef: Coef, model_path, episodes=1000,  render=False):
     #     render_env(model, episodes)
     vec_env = model.get_env()
     vec_env.reset()
+    # render_env(model, 1000)
+    # return
     # yes fancy evaluation for now
     std, mean = evaluate_policy(
         model, vec_env, n_eval_episodes=episodes, callback=grab_screens)
