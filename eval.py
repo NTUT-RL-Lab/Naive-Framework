@@ -10,6 +10,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from guise import Guise
 from coef import Coef
 from typing import Any, Dict
+import numpy as np
 # load model and evaluate
 
 
@@ -78,16 +79,24 @@ def eval_model(model, model_name, env_name, facade: Facade, episodes=1000,  rend
 def render_env(model, episodes=1000):
     """Renders the environment
     """
+    rewards = []
     vec_env = model.get_env()
     obs = vec_env.reset()
+    temp = 0
     for _ in range(episodes):
         action, _states = model.predict(obs)
-        obs, rewards, dones, info = vec_env.step(action)
+        obs, reward, dones, info = vec_env.step(action)
+        temp += reward
         vec_env.render("human")
         if dones:
             obs = vec_env.reset()
+            rewards.append(temp)
+            temp = 0
             # break
+    rewards.append(temp)
     vec_env.close()
+    logger.info(
+        f"mean reward: {sum(rewards)/len(rewards)}, std: {np.std(rewards)}")
 
 
 if __name__ == '__main__':
