@@ -17,6 +17,7 @@ class Director():
         self.n_timestep = coef.n_timestep
         self.c_lr = coef.c_lr
         self.cap = coef.cap
+        self.tolerance = coef.tolerance
         self.env_weights = coef.env_weights
         self.n_envs = coef.n_envs
         self.env_ids = coef.env_ids
@@ -30,6 +31,11 @@ class Director():
         self.model: BaseAlgorithm = None
         self.model_class: BaseAlgorithm = None
         self.exp_name = ""
+        self.evaluated_env = -1
+        self.cumulative_reward = 0
+        self.timer = 0
+        self.s_last_mean = 100000000000
+        self.last_mean = 100000000000
         for env_id in self.env_ids:
             self.exp_name += re.sub('[^0-9a-zA-Z]+', '_', env_id) + "_"
         self.exp_name += f"{self.coef.algorithm.__name__}_{self.n_timestep//1_000_000}M_{self.c_lr}_{self.cap}"
@@ -39,31 +45,60 @@ class Director():
         self.model = model
         self.model_class = model.__class__
 
+    def set_eval(self, env_id: int) -> None:
+        """Sets the env to be evaluated
+        """
+        self.evaluated_env = env_id
+
     def learn(self) -> None:
         self.model.learn(total_timesteps=self.n_timestep,
                          progress_bar=True, tb_log_name=self.exp_name)
 
     # env_id
     def update(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
+        if self.evaluated_env != -1:
+            return (self.evaluated_env,)
         self.env_steps[self.env_id] += 1
+        if (self.env_steps[self.env_id] % 1000_000_000 == 0):
+            self.save(
+                f"models/{self.exp_name}_{self.env_id}_step_{self.env_steps[self.env_id]//1_000_000_000}B")
+        self.timer += 1
         if "👻" == "🎃":
             mean, std = self.eval(env_id=self.env_id, episodes=10)
             if (mean > 10):  # arbitrary value
                 self.env_id = (self.env_id + 1) % self.n_envs
-        if (self.env_steps[self.env_id] > self.cap):
-            self.env_steps[self.env_id] = 0
-            self.env_id = (self.env_id + 1) % self.n_envs
+        if self.timer % 10000 == 0:
+            self.timer = 0
+            mean, std = self.eval(env_id=0, episodes=10)
+            # if close to the cap, start to consider whether to switch env
+            if self.cap - self.last_mean < 10 + self.tolerance:
+                mean_s, std_s = self.eval(env_id=1, episodes=10)
+                if mean_s / self.s_last_mean > 1.1:
+                    self.tolearnce = self.tolerance ** 1.01
+                if (mean > self.cap - self.tolerance):
+                    self.env_id = 1
+                else:
+                    self.env_id = 0
+                self.s_last_mean = mean_s
+                logger.info(f"evaluate env 1 mean: {mean_s}, std: {std_s}")
+            self.last_mean = mean
+
+            logger.info(f"evaluate env 0 mean: {mean}, std: {std}")
+
         # logger.info(f"env_id: {self.env_id}")
         return (self.env_id,)
 
     def eval(self, env_id: int, episodes: int = 10) -> tuple[int, int]:
         """Evaluates the environment
         """
-        self.model.save("EvalModel")
-        evalModel = self.model_class.load(
-            "EvalModel", env=self.exp_envs[env_id])
+        self.evaluated_env = env_id
+
+        vec_env = self.model.get_env()
+        vec_env.reset()
+
         mean_reward, std_reward = evaluate_policy(
-            evalModel, self.exp_envs[env_id], n_eval_episodes=episodes)
+            self.model, vec_env, n_eval_episodes=episodes, render=True)
+        self.evaluated_env = -1
         return mean_reward, std_reward
 
     def save(self, path: str) -> None:
@@ -97,6 +132,8 @@ class Director():
             logger.info(
                 f"disguises[{i}].observation_space.shape: {disguises[i].observation_space.shape}")
         logger.info(f"all_actions: {all_actions}")
+        reward_coef = np.sqrt(np.sum(self.rnd_score**2))/self.rnd_score
+        logger.info(f"reward_coef: {reward_coef}")
         for i in range(disguises.__len__()):
             mapping = {}
             for key, value in all_actions.items():
@@ -110,7 +147,7 @@ class Director():
             disguises[i].init_action_mapping(
                 mapping, origin_space=disguises[i].action_space.n)
             disguises[i].init_reward_coef(
-                np.sqrt(np.sum(self.rnd_score))/self.rnd_score[i])
+                reward_coef[i])
         # calculte the reward coefficient, based on the random score square of each env
 
         return disguises

@@ -10,6 +10,7 @@ from stable_baselines3 import *
 from guise import Guise
 import numpy as np
 import argparse
+from copy import deepcopy
 
 
 def main():
@@ -27,9 +28,9 @@ def main():
     director = Director(coef)
     envs = director.birth_envs()
     facade = Facade(envs, director=director)
-    model = coef.algorithm(coef.policy, facade, tensorboard_log="logs/")
+    model = coef.algorithm(policy=coef.policy, env=facade,
+                           tensorboard_log="logs/", seed=coef.seed,)
     director.set_model(model)
-
     director.learn()
     print("Learning done")
     director.save("models/" + args.model)

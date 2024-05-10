@@ -102,8 +102,7 @@ class Coef:
             "A2C": A2C,
             "DDPG": DDPG
         }
-        self.algorithm = algo_map[config["algorithm"]
-                                  ] if config["algorithm"] in algo_map else PPO
+        self.algorithm = algo_map[config.get("algorithm", "PPO")]
         self.policy = config["policy"]
         self.eval_freq = config["eval_freq"]
         self.eval_episodes = config["eval_episodes"]
@@ -111,15 +110,20 @@ class Coef:
         self.device = config["device"]
         self.env_weights = config["env_weights"]
         self.n_envs = len(self.env_ids)
+        self.tolerance = config.get("tolerance", 0.1)
+        self.exp_name = config.get("exp_name", "default")
         mappings_path = "config/env_info.toml"
 
         self.act_mapping = []
         self.rnd_score = []
         with open(mappings_path, "rb") as f:
             env_info = tomllib.load(f)
+
             for env_id in self.env_ids:
-                rnd = env_info[env_id]["info"]["rnd_score"] if "rnd_score" in env_info[env_id]["info"] else 1
+                info = env_info[env_id].get("info", {})
+                rnd = info.get("rnd_score", 1)
                 self.rnd_score.append(rnd)
                 # change key type to int
                 self.act_mapping.append(
                     {int(k): v for k, v in env_info[env_id]["mappings"].items()})
+        self.rnd_score = np.array(self.rnd_score)

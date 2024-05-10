@@ -16,33 +16,33 @@ from typing import Any, Dict
 def eval_exp(config_path, model_path, env_id=-1, episodes=1000,  render=False):
     """Evaluates the experiment
     """
-    coef = Coef(config_path)
     logger.set_level(logger.INFO)
+    coef = Coef(config_path)
+    director = Director(coef)
+    envs = director.birth_envs()
+    facade = Facade(envs, director=director)
+    model = coef.algorithm(policy=coef.policy, env=facade,)
+    model.load(model_path)
     if env_id == -1:
         logger.info("evaluating all envs")
         for i in range(coef.n_envs):
-            _coef = deepcopy(coef)
-            _coef.env_ids = [coef.env_ids[i]]
-            _coef.act_mapping = [coef.act_mapping[i]]
-            _coef.n_envs = 1
-            eval_model(_coef, model_path, episodes, render)
+            env_name = coef.env_ids[i]
+            logger.info(f"evaluating env {env_name}")
+            director.set_eval(i)
+            eval_model(model, re.sub(
+                '[^0-9a-zA-Z]+', '_', model_path), env_name, facade, episodes, render)
     else:
+        # WONTFIX
         logger.info(f"evaluating env {env_id}")
         coef.env_ids = [coef.env_ids[env_id]]
         coef.act_mapping = [coef.act_mapping[env_id]]
         coef.n_envs = 1
-        eval_model(coef, model_path, episodes, render)
+        eval_model(coef, model_path, envs[i], episodes, render)
 
 
-def eval_model(coef: Coef, model_path, episodes=1000,  render=False):
+def eval_model(model, model_name, env_name, facade: Facade, episodes=1000,  render=False):
     """Evaluates the model
     """
-    director = Director(coef)
-    envs = director.birth_envs()
-    facade = Facade(envs, director=director)
-    model = coef.algorithm(coef.policy, facade)
-    model.load(model_path)
-    env_name = re.sub('[^0-9a-zA-Z]+', '_', coef.env_ids[0])
     screens = []
 
     def grab_screens(_locals: Dict[str, Any], _globals: Dict[str, Any]) -> None:
@@ -52,13 +52,13 @@ def eval_model(coef: Coef, model_path, episodes=1000,  render=False):
     #     render_env(model, episodes)
     vec_env = model.get_env()
     vec_env.reset()
-    # render_env(model, 1000)
-    # return
+    render_env(model, episodes=1000)
+    return
     # yes fancy evaluation for now
     std, mean = evaluate_policy(
         model, vec_env, n_eval_episodes=episodes, callback=grab_screens)
     if render:
-        path = f"logs/videos/{re.sub('[^0-9a-zA-Z]+', '_', model_path)}"
+        path = f"logs/videos/{model_name}"
         import os
         import cv2
         if not os.path.exists(path):
