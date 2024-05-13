@@ -58,6 +58,7 @@ class Guise(PixelObservationWrapper):
         self.reward_coef = reward_coef
 
     def map_action(self, action: np.ndarray | int) -> np.ndarray | int:
+        action = int(action)
         if isinstance(action, (np.int64, int)):
             if action in self.mapping:
                 return self.mapping[action]

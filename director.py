@@ -67,7 +67,7 @@ class Director():
             mean, std = self.eval(env_id=self.env_id, episodes=10)
             if (mean > 10):  # arbitrary value
                 self.env_id = (self.env_id + 1) % self.n_envs
-        if self.timer % 10000 == 0:
+        if self.n_envs == 2 and self.timer % 10000 == 0:
             self.timer = 0
             mean, std = self.eval(env_id=0, episodes=10)
             # if close to the cap, start to consider whether to switch env
@@ -97,7 +97,7 @@ class Director():
         vec_env.reset()
 
         mean_reward, std_reward = evaluate_policy(
-            self.model, vec_env, n_eval_episodes=episodes, render=True)
+            self.model, vec_env, n_eval_episodes=episodes)
         self.evaluated_env = -1
         return mean_reward, std_reward
 
