@@ -112,6 +112,7 @@ class Coef:
         self.n_envs = len(self.env_ids)
         self.tolerance = config.get("tolerance", 0.1)
         self.exp_name = config.get("exp_name", "default")
+        self.switching_algorithm = config.get("switching_algorithm", "algo2")
         mappings_path = "config/env_info.toml"
 
         self.act_mapping = []

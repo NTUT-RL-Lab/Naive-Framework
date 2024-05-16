@@ -26,10 +26,17 @@ class Director():
         self.c_transition_loss = coef.c_transition_loss
         self.policy = coef.policy
         self.env_steps = [0] * self.n_envs
+        self.cumulative_reward = [0] * self.n_envs
         self.action_mappings = coef.act_mapping
         self.rnd_score = coef.rnd_score  # random score for each env
         self.model: BaseAlgorithm = None
         self.model_class: BaseAlgorithm = None
+        algo_dict = {
+            "algo1": self.algorithm_1,
+            "algo2": self.algorithm_2,
+            "algo3": self.algorithm_3
+        }
+        self.switching_algorithm = algo_dict[coef.switching_algorithm]
         self.exp_name = ""
         self.evaluated_env = -1
         self.cumulative_reward = 0
@@ -54,19 +61,20 @@ class Director():
         self.model.learn(total_timesteps=self.n_timestep,
                          progress_bar=True, tb_log_name=self.exp_name)
 
-    # env_id
-    def update(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
-        if self.evaluated_env != -1:
-            return (self.evaluated_env,)
-        self.env_steps[self.env_id] += 1
-        if (self.env_steps[self.env_id] % 1000_000_000 == 0):
-            self.save(
-                f"models/{self.exp_name}_{self.env_id}_step_{self.env_steps[self.env_id]//1_000_000_000}B")
-        self.timer += 1
-        if "👻" == "🎃":
-            mean, std = self.eval(env_id=self.env_id, episodes=10)
-            if (mean > 10):  # arbitrary value
-                self.env_id = (self.env_id + 1) % self.n_envs
+    def algorithm_1(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
+        if (self.env_steps[self.env_id] > self.cap):
+            self.env_steps[self.env_id] = 0
+            self.env_id = (self.env_id + 1) % self.n_envs
+        return (self.env_id,)
+
+    def algorithm_2(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
+        self.cumulative_reward[self.env_id] += reward
+        worst = np.argmin(self.cumulative_reward)
+        if self.cumulative_reward[self.env_id] - self.cumulative_reward[worst] > self.cap:
+            self.env_id = worst
+        return (self.env_id,)
+
+    def algorithm_3(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
         if self.n_envs == 2 and self.timer % 10000 == 0:
             self.timer = 0
             mean, std = self.eval(env_id=0, episodes=10)
@@ -85,8 +93,21 @@ class Director():
 
             logger.info(f"evaluate env 0 mean: {mean}, std: {std}")
 
-        # logger.info(f"env_id: {self.env_id}")
-        return (self.env_id,)
+    # env_id
+    def update(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
+        if self.evaluated_env != -1:
+            return (self.evaluated_env,)
+        self.env_steps[self.env_id] += 1
+        if (self.env_steps[self.env_id] % 1000_000_000 == 0):
+            self.save(
+                f"models/{self.exp_name}_{self.env_id}_step_{self.env_steps[self.env_id]//1_000_000_000}B")
+        self.timer += 1
+        if "👻" == "🎃":
+            mean, std = self.eval(env_id=self.env_id, episodes=10)
+            if (mean > 10):  # arbitrary value
+                self.env_id = (self.env_id + 1) % self.n_envs
+
+        return self.switching_algorithm(observation, reward, terminated, truncated, info)
 
     def eval(self, env_id: int, episodes: int = 10) -> tuple[int, int]:
         """Evaluates the environment
