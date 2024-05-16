@@ -24,6 +24,8 @@ class Guise(PixelObservationWrapper):
         self.origin_space = -1
         self.reward_coef = 1.0
         self.frames = []
+        self.steps = 0
+        self.record = False
 
     def rescale_observation(self, shape: tuple[int, int] | int):
         """Rescale the observation space
@@ -85,23 +87,28 @@ class Guise(PixelObservationWrapper):
             raise DependencyNotInstalled(
                 "opencv (cv2) is not installed, run `pip install gymnasium[other]`"
             ) from e
-        if (len(self.frames) == 1000):
+        if self.steps % 1000_000 == 0:
+            self.record = True
+        if (self.record and len(self.frames) == 10000):
             import os
             if not os.path.exists("logs/videos/train"):
                 os.makedirs("logs/videos/train")
             height, width, _ = self.frames[0].shape
             out = cv2.VideoWriter(
-                f"logs/videos/train/temp.avi", cv2.VideoWriter_fourcc(*'DIVX'), 30, (width, height))
+                f"logs/videos/train/{self.steps//1000_000}M.avi", cv2.VideoWriter_fourcc(*'DIVX'), 30, (width, height))
             for frame in self.frames:
                 out.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
             out.release()
             self.frames = []
-        self.frames.append(obs['pixels'])
+            self.record = False
+        if self.record:
+            self.frames.append(obs['pixels'])
         # resize and grayscale
         observation = cv2.resize(
             cv2.cvtColor(obs['pixels'], cv2.COLOR_RGB2GRAY), self.shape[1::-1], interpolation=cv2.INTER_AREA)
         # save the image
         # cv2.imwrite("logs/image.png", observation)
+        self.steps += 1
         return observation.reshape(self.observation_space.shape)
 
     def reward(self, reward):

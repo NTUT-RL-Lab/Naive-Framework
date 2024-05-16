@@ -39,7 +39,6 @@ class Director():
         self.switching_algorithm = algo_dict[coef.switching_algorithm]
         self.exp_name = ""
         self.evaluated_env = -1
-        self.cumulative_reward = 0
         self.timer = 0
         self.s_last_mean = 100000000000
         self.last_mean = 100000000000
