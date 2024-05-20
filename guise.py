@@ -87,7 +87,7 @@ class Guise(PixelObservationWrapper):
             raise DependencyNotInstalled(
                 "opencv (cv2) is not installed, run `pip install gymnasium[other]`"
             ) from e
-        if self.steps % 1000_000 == 0:
+        if self.steps % 100_0000 == 0:
             self.record = True
         if (self.record and len(self.frames) == 10000):
             import os

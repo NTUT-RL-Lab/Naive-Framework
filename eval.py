@@ -80,25 +80,25 @@ def render_env(model, facade: Facade, env_name, model_name, episodes=1000):
     """Renders the environment
     """
     rewards = []
-    vec_env = model.get_env()
     screens = []
     # obs = vec_env.reset()
     obs, info = facade.reset()
     temp = 0
-    for _ in range(episodes):
-        action, _states = model.predict(obs)
+    while True:
+        action, _states = model.predict(obs, )
+        # logger.info(f"action: {action}")
         # obs, reward, dones, info = vec_env.step(action)
         obs, reward, dones, truncated, info = facade.step(action)
         temp += reward
         # vec_env.render("human")
         screens.append(facade.render())
-        if dones:
+        if dones or truncated:
             # obs = vec_env.reset()
             facade.reset()
             rewards.append(temp)
             temp = 0
-            # break
-    rewards.append(temp)
+            break
+    # rewards.append(temp)
     # vec_env.close()
     facade.close()
 
@@ -130,5 +130,5 @@ if __name__ == '__main__':
     parser.add_argument("--render", type=bool, default=False,
                         help="render the evaluation", required=False)
     args = parser.parse_args()
-    eval_exp("config/"+args.config, "models/"+args.model,
-             args.env_id, args.episodes, args.render)
+    eval_exp("config/"+args.config, "models/"+args.model, args.env_id,
+             args.episodes, args.render)

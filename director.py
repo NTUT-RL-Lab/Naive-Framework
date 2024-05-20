@@ -44,7 +44,7 @@ class Director():
         self.last_mean = 100000000000
         for env_id in self.env_ids:
             self.exp_name += re.sub('[^0-9a-zA-Z]+', '_', env_id) + "_"
-        self.exp_name += f"{self.coef.algorithm.__name__}_{self.n_timestep//1_000_000}M_{self.c_lr}_{self.cap}"
+        self.exp_name += f"{self.coef.algorithm.__name__}_{coef.switching_algorithm}_{self.n_timestep//1_000_000}M_{self.c_lr}_{self.cap}"
 
     def set_model(self, model: BaseAlgorithm) -> None:
         """Sets the model to be used for learning"""
@@ -70,6 +70,9 @@ class Director():
         self.cumulative_reward[self.env_id] += reward
         worst = np.argmin(self.cumulative_reward)
         if self.cumulative_reward[self.env_id] - self.cumulative_reward[worst] > self.cap:
+            if self.env_id != worst:
+                logger.info(
+                    f"step:{self.timer}, switch from {self.env_id} to {worst}, reward: {self.cumulative_reward}")
             self.env_id = worst
         return (self.env_id,)
 
@@ -97,7 +100,7 @@ class Director():
         if self.evaluated_env != -1:
             return (self.evaluated_env,)
         self.env_steps[self.env_id] += 1
-        if (self.env_steps[self.env_id] % 1000_000_000 == 0):
+        if (self.env_steps[self.env_id] % 5_000_000 == 0):
             self.save(
                 f"models/{self.exp_name}_{self.env_id}_step_{self.env_steps[self.env_id]//1_000_000_000}B")
         self.timer += 1
