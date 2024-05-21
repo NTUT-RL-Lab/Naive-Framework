@@ -94,6 +94,7 @@ class Director():
             self.last_mean = mean
 
             logger.info(f"evaluate env 0 mean: {mean}, std: {std}")
+        return (self.env_id,)
 
     # env_id
     def update(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
