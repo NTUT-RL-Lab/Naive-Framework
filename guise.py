@@ -26,6 +26,12 @@ class Guise(PixelObservationWrapper):
         self.frames = []
         self.steps = 0
         self.record = False
+        self.exp_name = "🤡"
+        self.env_id = -1
+
+    def set_info(self, exp_name: str, env_id: int):
+        self.exp_name = exp_name
+        self.env_id = env_id
 
     def rescale_observation(self, shape: tuple[int, int] | int):
         """Rescale the observation space
@@ -91,11 +97,11 @@ class Guise(PixelObservationWrapper):
             self.record = True
         if (self.record and len(self.frames) == 10000):
             import os
-            if not os.path.exists("logs/videos/train"):
-                os.makedirs("logs/videos/train")
+            if not os.path.exists("logs/videos/train/" + self.exp_name):
+                os.makedirs("logs/videos/train/" + self.exp_name)
             height, width, _ = self.frames[0].shape
             out = cv2.VideoWriter(
-                f"logs/videos/train/{self.steps//1000_000}M.avi", cv2.VideoWriter_fourcc(*'DIVX'), 30, (width, height))
+                f"logs/videos/train/{self.exp_name}/env{self.env_id}_{self.steps//1000_000}M.avi", cv2.VideoWriter_fourcc(*'DIVX'), 30, (width, height))
             for frame in self.frames:
                 out.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
             out.release()

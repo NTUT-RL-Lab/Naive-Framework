@@ -40,6 +40,7 @@ class Director():
         self.exp_name = ""
         self.evaluated_env = -1
         self.timer = 0
+        self.steps = 0
         self.s_last_mean = 100000000000
         self.last_mean = 100000000000
         for env_id in self.env_ids:
@@ -101,15 +102,14 @@ class Director():
         if self.evaluated_env != -1:
             return (self.evaluated_env,)
         self.env_steps[self.env_id] += 1
-        if (self.env_steps[self.env_id] % 5_000_000 == 0):
+        self.steps += 1
+        if (self.steps % 5_000_000 == 0):
             self.save(
-                f"models/{self.exp_name}_{self.env_id}_step_{self.env_steps[self.env_id]//1_000_000_000}B")
+                f"models/{self.exp_name}_step_{self.steps//1_000_000}M")
         self.timer += 1
         if "👻" == "🎃":
-            mean, std = self.eval(env_id=self.env_id, episodes=10)
-            if (mean > 10):  # arbitrary value
-                self.env_id = (self.env_id + 1) % self.n_envs
-
+            import os
+            os.remove("👻")
         return self.switching_algorithm(observation, reward, terminated, truncated, info)
 
     def eval(self, env_id: int, episodes: int = 10) -> tuple[int, int]:
@@ -139,6 +139,7 @@ class Director():
         disguises: list[Guise] = []
         for i in range(envs.__len__()):
             disguises.append(Guise(envs[i]))
+            disguises[i].set_info(self.exp_name, i)
         #     obs = disguises[i].observation_space
         #     max_w = max(max_w, obs.shape[0])
         #     max_h = max(max_h, obs.shape[1])
