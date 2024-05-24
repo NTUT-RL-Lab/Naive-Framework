@@ -1,0 +1,12 @@
+n_timestep = 21000000            # total training timesteps needed
+c_lr = 0.01                      # learning rate
+cap = 10000                      # cap for environment switching
+c_transition_loss = 0.5          # transition loss coefficient
+algorithm = "PPO"                # algorithm identifier
+policy = "CnnPolicy"             # policy identifier
+eval_freq = 10                   # evaluation frequency
+eval_episodes = 5                # number of evaluation episodes
+seed = 42                        # random seed
+device = "cuda"                  # computation device
+env_weights = [0.5, 0.5]
+env_ids = ["ALE/DemonAttack-v5"]
