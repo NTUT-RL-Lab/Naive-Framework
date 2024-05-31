@@ -11,6 +11,8 @@ from guise import Guise
 from coef import Coef
 from typing import Any, Dict
 import numpy as np
+from gymnasium.error import DependencyNotInstalled
+import os
 # load model and evaluate
 
 
@@ -22,8 +24,9 @@ def eval_exp(config_path, model_path, env_id=-1, episodes=1000,  render=False):
     director = Director(coef)
     envs = director.birth_envs()
     facade = Facade(envs, director=director)
-    model = coef.algorithm(policy=coef.policy, env=facade, seed=coef.seed)
-    model.load(model_path)
+    # model = coef.algorithm(policy=coef.policy, env=facade, seed=coef.seed)
+    # model.load(model_path)
+    model = coef.algorithm.load(model_path, env=facade)
     if env_id == -1:
         logger.info("evaluating all envs")
         for i in range(coef.n_envs):
@@ -49,14 +52,14 @@ def eval_model(model, model_name, env_name, facade: Facade, episodes=1000,  rend
     def grab_screens(_locals: Dict[str, Any], _globals: Dict[str, Any]) -> None:
         screen = facade.render()
         screens.append(screen)
-    if render:
-        render_env(model, facade, env_name, model_name, episodes=1000)
-    return
+    # if render:
+    #     render_env(model, facade, env_name, model_name, episodes=1000)
+    # return
     # yes fancy evaluation for now
     vec_env = model.get_env()
     vec_env.reset()
     std, mean = evaluate_policy(
-        model, facade, n_eval_episodes=episodes, callback=grab_screens)
+        model, vec_env, n_eval_episodes=episodes, callback=grab_screens)
     if render:
         logger.info(f"rendering video for {env_name}")
         path = f"logs/videos/{model_name}"
@@ -79,23 +82,19 @@ def eval_model(model, model_name, env_name, facade: Facade, episodes=1000,  rend
 def render_env(model, facade: Facade, env_name, model_name, episodes=1000):
     """Renders the environment
     """
-    rewards = []
     screens = []
     # obs = vec_env.reset()
     obs, info = facade.reset()
-    temp = 0
     while True:
         action, _states = model.predict(obs, )
         # logger.info(f"action: {action}")
         # obs, reward, dones, info = vec_env.step(action)
         obs, reward, dones, truncated, info = facade.step(action)
-        temp += reward
         # vec_env.render("human")
         screens.append(facade.render())
         if dones or truncated:
             # obs = vec_env.reset()
             facade.reset()
-            rewards.append(temp)
             temp = 0
             break
     # rewards.append(temp)
@@ -115,8 +114,6 @@ def render_env(model, facade: Facade, env_name, model_name, episodes=1000):
     for screen in screens:
         out.write(cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
     out.release()
-    logger.info(
-        f"mean reward: {sum(rewards)/len(rewards)}, std: {np.std(rewards)}")
 
 
 if __name__ == '__main__':
@@ -127,7 +124,7 @@ if __name__ == '__main__':
                         help="environment id to evaluate", required=False)
     parser.add_argument("--episodes", type=int, default=10,
                         help="number of episodes to evaluate", required=False)
-    parser.add_argument("--render", type=bool, default=False,
+    parser.add_argument("--render", type=bool, default=True,
                         help="render the evaluation", required=False)
     args = parser.parse_args()
     eval_exp("config/"+args.config, "models/"+args.model, args.env_id,

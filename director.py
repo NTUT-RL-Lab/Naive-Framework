@@ -43,6 +43,7 @@ class Director():
         self.steps = 0
         self.s_last_mean = 100000000000
         self.last_mean = 100000000000
+        self.last_performance = np.ones(self.n_envs) * 100000000000
         for env_id in self.env_ids:
             self.exp_name += re.sub('[^0-9a-zA-Z]+', '_', env_id) + "_"
         self.exp_name += f"{self.coef.algorithm.__name__}_{coef.switching_algorithm}_{self.n_timestep//1_000_000}M_{self.c_lr}_{self.cap}"
@@ -97,7 +98,29 @@ class Director():
             logger.info(f"evaluate env 0 mean: {mean}, std: {std}")
         return (self.env_id,)
 
+    def algorithm_4(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
+        if self.steps % 10000 != 0:
+            return (self.env_id,)
+        for i in range(self.n_envs):
+            if i == self.env_id:
+                continue
+            mean, std = self.eval(env_id=i, episodes=10)
+            if mean / self.last_performance[i] < self.cap:
+                self.env_id = i
+            self.last_performance[i] = mean
+        return (self.env_id,)
+
+    def algorithm_5(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
+        if self.steps % 10000 != 0:
+            return (self.env_id,)
+        mean, std = self.eval(env_id=self.env_id, episodes=10)
+        temp = self.env_id
+        if mean / self.last_performance[self.env_id] < self.cap:
+            self.env_id = (self.env_id + 1) % self.n_envs
+        self.last_performance[temp] = mean
+
     # env_id
+
     def update(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
         if self.evaluated_env != -1:
             return (self.evaluated_env,)
