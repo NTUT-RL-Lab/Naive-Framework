@@ -80,8 +80,8 @@ class Director():
         return (self.env_id,)
 
     def algorithm_3(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
-        if self.n_envs == 2 and self.timer % 10000 == 0:
-            self.timer = 0
+        now_id = self.env_id
+        if self.n_envs == 2 and self.steps % 10000 == 0:
             mean, std = self.eval(env_id=0, episodes=10)
             # if close to the cap, start to consider whether to switch env
             if self.cap - self.last_mean < 10 + self.tolerance:
@@ -97,6 +97,9 @@ class Director():
             self.last_mean = mean
 
             logger.info(f"evaluate env 0 mean: {mean}, std: {std}")
+        if now_id != self.env_id:
+            logger.info(
+                f"step:{self.steps}, switch from {now_id} to {self.env_id}")
         return (self.env_id,)
 
     def algorithm_4(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
