@@ -34,7 +34,8 @@ class Director():
         algo_dict = {
             "algo1": self.algorithm_1,
             "algo2": self.algorithm_2,
-            "algo3": self.algorithm_3
+            "algo3": self.algorithm_3,
+            "algo4": self.algorithm_4,
         }
         self.switching_algorithm = algo_dict[coef.switching_algorithm]
         self.exp_name = ""
@@ -107,6 +108,7 @@ class Director():
             mean, std = self.eval(env_id=i, episodes=10)
             if mean / self.last_performance[i] < self.cap:
                 self.env_id = i
+                logger.info(f"steps: {self.steps}, switch to env {i}")
             self.last_performance[i] = mean
         return (self.env_id,)
 
