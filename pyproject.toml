@@ -5,6 +5,9 @@ description = "A naive RL framework"
 authors = ["huhuhu0420 <ghostcheng.00@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [
+    { include = "env_container", from = "packages"},
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -20,6 +23,7 @@ werkzeug = "2.0.3"
 numba = "^0.59.1"
 transformers = "^4.41.2"
 
+numpy = "^1.26.4"
 [[tool.poetry.source]]
 name = "pytorch-gpu-src"
 url = "https://download.pytorch.org/whl/cu121"
