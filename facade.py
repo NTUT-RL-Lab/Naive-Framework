@@ -3,6 +3,8 @@ from gymnasium import Env, logger, Wrapper
 from matplotlib.pylab import f
 from director import Director
 from guise import Guise
+import gymnasium as gym
+import numpy as np
 
 
 class Facade(Wrapper):
@@ -22,7 +24,13 @@ class Facade(Wrapper):
             env.reset()
         self.env = envs[0]
         self.director = director
+        self._reward_space = gym.spaces.Box(
+            low=0.0, high=1.0, shape=(1, ), dtype=np.float32)
         super().__init__(envs[0])
+
+    @property
+    def reward_space(self):
+        return self._reward_space
 
     def switch_env(self, index: int) -> None:
         """Switches the environment to the one at the index
@@ -40,6 +48,7 @@ class Facade(Wrapper):
     def step(self, action):
         """Step function to step the environment
         """
+        print("🙏")
         observation, reward, terminated, truncated, info = super().step(
             self.env.map_action(action))
         # apply reward weights
@@ -48,4 +57,8 @@ class Facade(Wrapper):
         index,  = self.director.update(
             observation, reward, terminated, truncated, info)
         self.switch_env(index)
-        return observation, reward, terminated, truncated, info
+        return observation, reward, (terminated | truncated), info
+
+    # def reset(self):
+    #     obs, info = super().reset()
+    #     return obs
