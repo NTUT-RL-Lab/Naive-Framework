@@ -34,7 +34,8 @@ class Director():
         algo_dict = {
             "algo1": self.algorithm_1,
             "algo2": self.algorithm_2,
-            "algo3": self.algorithm_3
+            "algo3": self.algorithm_3,
+            "algo4": self.algorithm_4,
         }
         self.switching_algorithm = algo_dict[coef.switching_algorithm]
         self.exp_name = ""
@@ -43,6 +44,7 @@ class Director():
         self.steps = 0
         self.s_last_mean = 100000000000
         self.last_mean = 100000000000
+        self.vec_env = None
         self.last_performance = np.ones(self.n_envs) * 100000000000
         for env_id in self.env_ids:
             self.exp_name += re.sub('[^0-9a-zA-Z]+', '_', env_id) + "_"
@@ -52,6 +54,7 @@ class Director():
         """Sets the model to be used for learning"""
         self.model = model
         self.model_class = model.__class__
+        self.vec_env = model.get_env()
 
     def set_eval(self, env_id: int) -> None:
         """Sets the env to be evaluated
@@ -79,8 +82,8 @@ class Director():
         return (self.env_id,)
 
     def algorithm_3(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
-        if self.n_envs == 2 and self.timer % 10000 == 0:
-            self.timer = 0
+        now_id = self.env_id
+        if self.n_envs == 2 and self.steps % 10000 == 0:
             mean, std = self.eval(env_id=0, episodes=10)
             # if close to the cap, start to consider whether to switch env
             if self.cap - self.last_mean < 10 + self.tolerance:
@@ -96,6 +99,9 @@ class Director():
             self.last_mean = mean
 
             logger.info(f"evaluate env 0 mean: {mean}, std: {std}")
+        if now_id != self.env_id:
+            logger.info(
+                f"step:{self.steps}, switch from {now_id} to {self.env_id}")
         return (self.env_id,)
 
     def algorithm_4(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
@@ -104,16 +110,17 @@ class Director():
         for i in range(self.n_envs):
             if i == self.env_id:
                 continue
-            mean, std = self.eval(env_id=i, episodes=10)
+            mean, std = self.eval(env_id=i, episodes=3)
             if mean / self.last_performance[i] < self.cap:
                 self.env_id = i
+                logger.info(f"steps: {self.steps}, switch to env {i}")
             self.last_performance[i] = mean
         return (self.env_id,)
 
     def algorithm_5(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
         if self.steps % 10000 != 0:
             return (self.env_id,)
-        mean, std = self.eval(env_id=self.env_id, episodes=10)
+        mean, std = self.eval(env_id=self.env_id, episodes=3)
         temp = self.env_id
         if mean / self.last_performance[self.env_id] < self.cap:
             self.env_id = (self.env_id + 1) % self.n_envs
@@ -135,16 +142,15 @@ class Director():
             os.remove("👻")
         return self.switching_algorithm(observation, reward, terminated, truncated, info)
 
-    def eval(self, env_id: int, episodes: int = 10) -> tuple[int, int]:
+    def eval(self, env_id: int, episodes: int = 3) -> tuple[int, int]:
         """Evaluates the environment
         """
         self.evaluated_env = env_id
 
-        vec_env = self.model.get_env()
-        vec_env.reset()
+        self.vec_env.reset()
 
         mean_reward, std_reward = evaluate_policy(
-            self.model, vec_env, n_eval_episodes=episodes)
+            self.model, self.vec_env, n_eval_episodes=episodes)
         self.evaluated_env = -1
         return mean_reward, std_reward
 

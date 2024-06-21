@@ -29,7 +29,7 @@ def main():
     envs = director.birth_envs()
     facade = Facade(envs, director=director)
     model = coef.algorithm(policy=coef.policy, env=facade,
-                           tensorboard_log="logs/", seed=coef.seed,)
+                           tensorboard_log="logs/", seed=coef.seed, learning_rate=coef.c_lr)
     director.set_model(model)
     director.learn()
     print("Learning done")

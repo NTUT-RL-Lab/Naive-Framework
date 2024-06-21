@@ -170,4 +170,4 @@ models/
 logs/
 
 # playground
-playground.py
+playground*
