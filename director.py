@@ -44,6 +44,7 @@ class Director():
         self.steps = 0
         self.s_last_mean = 100000000000
         self.last_mean = 100000000000
+        self.vec_env = None
         self.last_performance = np.ones(self.n_envs) * 100000000000
         for env_id in self.env_ids:
             self.exp_name += re.sub('[^0-9a-zA-Z]+', '_', env_id) + "_"
@@ -53,6 +54,7 @@ class Director():
         """Sets the model to be used for learning"""
         self.model = model
         self.model_class = model.__class__
+        self.vec_env = model.get_env()
 
     def set_eval(self, env_id: int) -> None:
         """Sets the env to be evaluated
@@ -108,7 +110,7 @@ class Director():
         for i in range(self.n_envs):
             if i == self.env_id:
                 continue
-            mean, std = self.eval(env_id=i, episodes=10)
+            mean, std = self.eval(env_id=i, episodes=3)
             if mean / self.last_performance[i] < self.cap:
                 self.env_id = i
                 logger.info(f"steps: {self.steps}, switch to env {i}")
@@ -118,7 +120,7 @@ class Director():
     def algorithm_5(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
         if self.steps % 10000 != 0:
             return (self.env_id,)
-        mean, std = self.eval(env_id=self.env_id, episodes=10)
+        mean, std = self.eval(env_id=self.env_id, episodes=3)
         temp = self.env_id
         if mean / self.last_performance[self.env_id] < self.cap:
             self.env_id = (self.env_id + 1) % self.n_envs
@@ -140,16 +142,15 @@ class Director():
             os.remove("👻")
         return self.switching_algorithm(observation, reward, terminated, truncated, info)
 
-    def eval(self, env_id: int, episodes: int = 10) -> tuple[int, int]:
+    def eval(self, env_id: int, episodes: int = 3) -> tuple[int, int]:
         """Evaluates the environment
         """
         self.evaluated_env = env_id
 
-        vec_env = self.model.get_env()
-        vec_env.reset()
+        self.vec_env.reset()
 
         mean_reward, std_reward = evaluate_policy(
-            self.model, vec_env, n_eval_episodes=episodes)
+            self.model, self.vec_env, n_eval_episodes=episodes)
         self.evaluated_env = -1
         return mean_reward, std_reward
 
