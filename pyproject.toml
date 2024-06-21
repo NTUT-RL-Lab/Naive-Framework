@@ -5,6 +5,9 @@ description = "A naive RL framework"
 authors = ["huhuhu0420 <ghostcheng.00@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [
+    { include = "env_container", from = "packages"},
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -13,7 +16,7 @@ stable-baselines3 = {extras = ["extra"], version = "^2.2.1"}
 torchvision = {version = "^0.16.2+cu121", source = "pytorch-gpu-src"}
 torchaudio = {version = "^2.1.2+cu121", source = "pytorch-gpu-src"}
 torch = {version = "^2.1.2+cu121", source = "pytorch-gpu-src"}
-
+numpy = "^1.26.4"
 [[tool.poetry.source]]
 name = "pytorch-gpu-src"
 url = "https://download.pytorch.org/whl/cu121"
