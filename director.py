@@ -28,6 +28,7 @@ class Director():
         self.env_steps = [0] * self.n_envs
         self.cumulative_reward = [0] * self.n_envs
         self.action_mappings = coef.act_mapping
+        self.blend = coef.blend
         self.rnd_score = coef.rnd_score  # random score for each env
         self.model: BaseAlgorithm = None
         self.model_class: BaseAlgorithm = None

@@ -115,6 +115,7 @@ class Coef:
         self.switching_algorithm = config.get("switching_algorithm", "algo2")
         mappings_path = "config/env_info.toml"
 
+        self.blend = config.get("blend", False)
         self.act_mapping = []
         self.rnd_score = []
         with open(mappings_path, "rb") as f:

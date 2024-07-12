@@ -3,6 +3,7 @@ from gymnasium import Env, logger, Wrapper
 from matplotlib.pylab import f
 from director import Director
 from guise import Guise
+import numpy as np
 
 
 class Facade(Wrapper):
@@ -22,6 +23,7 @@ class Facade(Wrapper):
             env.reset()
         self.env = envs[0]
         self.director = director
+        self.blend = director.blend
         super().__init__(envs[0])
 
     def switch_env(self, index: int) -> None:
@@ -40,6 +42,23 @@ class Facade(Wrapper):
     def step(self, action):
         """Step function to step the environment
         """
+        if self.blend:
+            observations, rewards, terminateds, truncateds, infos = [], [], [], [], []
+            for index in range(len(self.envs)):
+                self.switch_env(index)
+                observation, reward, terminated, truncated, info = super().step(
+                    self.env.map_action(action))
+                observations.append(observation)
+                rewards.append(self.env.reward(reward))
+                terminateds.append(terminated)
+                truncateds.append(truncated)
+                infos.append(info)
+            observation = np.mean(observations, axis=0)
+            reward = np.max(rewards)
+            terminated = np.max(terminateds)
+            truncated = np.max(truncateds)
+            info = {k: np.mean([i[k] for i in infos]) for k in infos[0]}
+            return observation, reward, terminated, truncated, info
         observation, reward, terminated, truncated, info = super().step(
             self.env.map_action(action))
         # apply reward weights
