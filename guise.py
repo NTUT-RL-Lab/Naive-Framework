@@ -37,16 +37,18 @@ class Guise(PixelObservationWrapper):
         """Rescale the observation space
         """
         if isinstance(shape, int):
-            shape = (shape, shape, 1)
+            # shape = (shape, shape, 1)
+            shape = (1, shape, shape)
         else:
-            shape = (shape[0], shape[1], 1)
+            # shape = (shape[0], shape[1], 1)
+            shape = (1, shape[0], shape[1])
         assert len(shape) == 3 and all(
             x > 0 for x in shape
         ), f"Expected shape to be a 2-tuple of positive integers, got: {shape}"
         obs_shape = tuple(shape)
         self.shape = obs_shape
         self.observation_space = gym.spaces.Box(
-            low=0, high=255, shape=obs_shape, dtype=np.uint8)
+            low=0, high=255, shape=obs_shape, dtype=np.float32)
 
     def init_action_mapping(self, mapping: dict[int, str] | Callable[[np.ndarray], np.ndarray | int], origin_space):
         """Initialize the action mapping
@@ -111,11 +113,16 @@ class Guise(PixelObservationWrapper):
             self.frames.append(obs['pixels'])
         # resize and grayscale
         observation = cv2.resize(
-            cv2.cvtColor(obs['pixels'], cv2.COLOR_RGB2GRAY), self.shape[1::-1], interpolation=cv2.INTER_AREA)
+            cv2.cvtColor(obs['pixels'], cv2.COLOR_RGB2GRAY), self.shape[1:], interpolation=cv2.INTER_AREA)
         # save the image
         # cv2.imwrite("logs/image.png", observation)
         self.steps += 1
-        return observation.reshape(self.observation_space.shape)
+        return observation.reshape(self.observation_space.shape).astype(np.float32)
+
+    def reset(self, **kwargs):
+        self.steps = 0
+        obs, info = super().reset(**kwargs)
+        return obs.reshape(self.observation_space.shape).astype(np.float32), info
 
     def reward(self, reward):
         return reward * self.reward_coef

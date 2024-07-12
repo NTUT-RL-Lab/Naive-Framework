@@ -45,4 +45,4 @@ class Facade(Wrapper):
         index,  = self.director.update(
             observation, reward, terminated, truncated, info)
         self.switch_env(index)
-        return observation, reward, terminated, truncated, info
+        return observation, reward, (terminated | truncated), info

@@ -8,6 +8,7 @@ pd_config = dict(
         n_evaluator_episode=8,
         stop_value=10000000000,
         frame_stack=4,
+        replay_path=f'./logs/videos/train/test_ding_phoenix_demon_attack'
     ),
     policy=dict(
         cuda=True,
@@ -27,7 +28,7 @@ pd_config = dict(
             target_update_freq=500,
             ent_coef=0,
         ),
-        collect=dict(n_sample=100, ),
+        collect=dict(n_sample=1000000, ),
         eval=dict(evaluator=dict(eval_freq=4000, )),
         other=dict(
             eps=dict(

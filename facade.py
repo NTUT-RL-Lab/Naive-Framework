@@ -58,7 +58,3 @@ class Facade(Wrapper):
             observation, reward, terminated, truncated, info)
         self.switch_env(index)
         return observation, reward, (terminated | truncated), info
-
-    # def reset(self):
-    #     obs, info = super().reset()
-    #     return obs
