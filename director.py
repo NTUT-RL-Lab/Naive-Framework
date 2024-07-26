@@ -36,6 +36,7 @@ class Director():
             "algo2": self.algorithm_2,
             "algo3": self.algorithm_3,
             "algo4": self.algorithm_4,
+            "algo6": self.algorithm_6,
         }
         self.switching_algorithm = algo_dict[coef.switching_algorithm]
         self.exp_name = ""
@@ -117,14 +118,17 @@ class Director():
             self.last_performance[i] = mean
         return (self.env_id,)
 
-    def algorithm_5(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
+    def algorithm_6(self, observation, reward, terminated, truncated, info) -> tuple[int, ...]:
         if self.steps % 10000 != 0:
             return (self.env_id,)
         mean, std = self.eval(env_id=self.env_id, episodes=3)
         temp = self.env_id
-        if mean / self.last_performance[self.env_id] < self.cap:
+        if mean / self.last_performance[self.env_id] > self.cap:
             self.env_id = (self.env_id + 1) % self.n_envs
+            logger.info(f"steps: {self.steps}, switch to env {self.env_id}")
         self.last_performance[temp] = mean
+
+        return (self.env_id,)
 
     # env_id
 
