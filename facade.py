@@ -4,6 +4,7 @@ from matplotlib.pylab import f
 from director import Director
 from guise import Guise
 import numpy as np
+from typing import Any
 
 
 class Facade(Wrapper):
@@ -68,3 +69,24 @@ class Facade(Wrapper):
             observation, reward, terminated, truncated, info)
         self.switch_env(index)
         return observation, reward, terminated, truncated, info
+
+    def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
+        if self.blend:
+            observations = []
+            infos = []
+            for index in range(len(self.envs)):
+                self.switch_env(index)
+                obs, info = super().reset(seed=seed, options=options)
+                observations.append(obs)
+                infos.append(info)
+            return np.mean(observations, axis=0), {k: np.mean([i[k] for i in infos]) for k in infos[0]}
+
+        observation, infos = super().reset(seed=seed, options=options)
+        return observation, infos
+
+    def close(self):
+        if self.blend:
+            for env in self.envs:
+                env.close()
+            return
+        return super().close()
