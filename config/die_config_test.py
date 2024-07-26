@@ -3,8 +3,8 @@ from easydict import EasyDict
 pd_config = dict(
     exp_name='test_ding_phoenix_demon_attack',
     env=dict(
-        collector_env_num=1,
-        evaluator_env_num=1,
+        collector_env_num=8,
+        evaluator_env_num=8,
         n_evaluator_episode=8,
         stop_value=10000000000,
         frame_stack=4,
@@ -28,7 +28,7 @@ pd_config = dict(
             target_update_freq=500,
             ent_coef=0,
         ),
-        collect=dict(n_sample=1000000, ),
+        collect=dict(n_sample=100, ),
         eval=dict(evaluator=dict(eval_freq=4000, )),
         other=dict(
             eps=dict(
@@ -53,4 +53,5 @@ create_config = pd_create_config
 if __name__ == '__main__':
     # or you can enter `ding -m serial -c phoenix_fqf_config.py -s 0`
     from ding.entry import serial_pipeline
-    serial_pipeline((main_config, create_config), seed=0)
+    serial_pipeline((main_config, create_config),
+                    seed=0, max_env_step=30_000_000)
