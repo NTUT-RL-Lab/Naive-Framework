@@ -23,6 +23,7 @@ import env_container
 from ding.framework import ding_init
 from tensorboardX import SummaryWriter
 from ding.utils import set_pkg_seed, get_rank
+from ding.worker import create_buffer
 import os
 from ding.policy import create_policy
 
@@ -60,6 +61,7 @@ def main():
     # model = DQN(ding.observation_space.shape[::-1], int(ding.action_space.n))
     buffer_ = DequeBuffer(
         size=cfg.policy.other.replay_buffer.replay_buffer_size)
+
     # policy = R2D2GTrXLPolicy(cfg.policy, model=model)
     policy = create_policy(cfg.policy, enable_field=[
                            'learn', 'collect', 'eval'])
