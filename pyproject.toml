@@ -25,6 +25,7 @@ transformers = "^4.41.2"
 numpy = "^1.26.4"
 di-engine = {git = "https://github.com/opendilab/DI-engine.git"}
 pyecharts = "^2.0.6"
+env = {path = "packages/env_container", develop = true}
 [[tool.poetry.source]]
 name = "pytorch-gpu-src"
 url = "https://download.pytorch.org/whl/cu121"
