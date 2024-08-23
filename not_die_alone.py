@@ -85,7 +85,7 @@ def not_alone(
     #     env_fn, collector_env_cfg, evaluator_env_cfg = env_setting
     # collector_env = create_env_manager(cfg.env.manager, [partial(env_fn, cfg=c) for c in collector_env_cfg])
     # evaluator_env = create_env_manager(cfg.env.manager, [partial(env_fn, cfg=c) for c in evaluator_env_cfg])
-    coef = Coef("config/single_space_invader.toml")
+    coef = Coef(cfg.conf_path)
     director = Director(coef)
     envs = director.birth_envs()
     collector_env_fn = [lambda: DingEnvWrapper(gym.make("Facade/container-v0", envs=deepcopy(
@@ -106,7 +106,7 @@ def not_alone(
     tb_logger = SummaryWriter(os.path.join(
         './logs/{}/'.format(cfg.exp_name), 'serial')) if get_rank() == 0 else None
     learner = BaseLearner(cfg.policy.learn.learner,
-                          policy.learn_mode, tb_logger, exp_name=f"not_die_log/{cfg.exp_name}")
+                          policy.learn_mode, tb_logger, exp_name=f"not_die_logs/{cfg.exp_name}")
     collector = create_serial_collector(
         cfg.policy.collect.collector,
         env=collector_env,

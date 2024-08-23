@@ -89,7 +89,7 @@ def not_die_eval(main_config: EasyDict, create_config: EasyDict, ckpt_path: str)
     create_config.policy.type = create_config.policy.type + '_command'
     cfg = compile_config(main_config, create_cfg=create_config, auto=True)
 
-    coef = Coef("config/single_space_invader.toml")
+    coef = Coef(main_config.conf_path)
     director = Director(coef)
     envs = director.birth_envs()
     # env = DingEnvWrapper(gym.make("Facade/container-v0", envs=deepcopy(
@@ -100,7 +100,8 @@ def not_die_eval(main_config: EasyDict, create_config: EasyDict, ckpt_path: str)
     env = create_env_manager(
         cfg.env.manager, env_fn=evaluator_env_fn)
     # Enable the video recording of the environment and set the video saving folder
-    env.enable_save_replay(replay_path=f'./{main_config.exp_name}/video')
+    env.enable_save_replay(
+        replay_path=f'./not_die_logs/{main_config.exp_name}/video')
     policy = create_policy(cfg.policy, model=None, enable_field=[
                            'learn', 'collect', 'eval', 'command'])
     policy.eval_mode.load_state_dict(torch.load(

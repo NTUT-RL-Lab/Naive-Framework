@@ -120,7 +120,6 @@ class Guise(PixelObservationWrapper):
         return observation.reshape(self.observation_space.shape).astype(np.float32)
 
     def reset(self, **kwargs):
-        self.steps = 0
         obs, info = super().reset(**kwargs)
         return obs.reshape(self.observation_space.shape).astype(np.float32), info
 

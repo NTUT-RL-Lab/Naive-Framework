@@ -2,12 +2,12 @@ from copy import deepcopy
 from easydict import EasyDict
 from not_die_alone import not_alone
 from not_die_eval import not_die_eval
-spaceinvaders_rainbow_config = dict(
-    exp_name='spaceinvaders_rainbow_seed0',
-    conf_path='config/single_space_invaders.toml',
+phoenix_rainbow_config = dict(
+    exp_name='phoenix30M_rainbow',
+    conf_path='config/single_phoenix.toml',
     env=dict(
-        collector_env_num=1,
-        evaluator_env_num=1,
+        collector_env_num=8,
+        evaluator_env_num=8,
         n_evaluator_episode=8,
         stop_value=10000000,
         manager=dict(shared_memory=False, )
@@ -16,7 +16,6 @@ spaceinvaders_rainbow_config = dict(
         cuda=True,
         priority=False,
         priority_IS_weight=False,
-        load_path='spaceinvaders_rainbow_seed0_240810_100023/ckpt/ckpt_best.pth.tar',
         model=dict(
             obs_shape=[1, 84, 84],
             action_shape=6,
@@ -47,15 +46,15 @@ spaceinvaders_rainbow_config = dict(
         ),
     ),
 )
-spaceinvaders_rainbow_config = EasyDict(spaceinvaders_rainbow_config)
-main_config = spaceinvaders_rainbow_config
-spaceinvaders_rainbow_create_config = dict(
+phoenix_rainbow_config = EasyDict(phoenix_rainbow_config)
+main_config = phoenix_rainbow_config
+phoenix_rainbow_create_config = dict(
     env_manager=dict(type='subprocess'),
     policy=dict(type='rainbow'),
 )
-spaceinvaders_rainbow_create_config = EasyDict(
-    spaceinvaders_rainbow_create_config)
-create_config = spaceinvaders_rainbow_create_config
+phoenix_rainbow_create_config = EasyDict(
+    phoenix_rainbow_create_config)
+create_config = phoenix_rainbow_create_config
 
 
 def main():
@@ -64,4 +63,4 @@ def main():
 
 def eval():
     not_die_eval(main_config, create_config,
-                 'spaceinvaders_rainbow_seed0_240810_100023/ckpt/ckpt_best.pth.tar')
+                 'not_die_logs\phoenix30M_rainbow\ckpt\ckpt_best.pth.tar')
