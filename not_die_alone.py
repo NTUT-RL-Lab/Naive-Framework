@@ -101,7 +101,9 @@ def not_alone(
     set_pkg_seed(cfg.seed, use_cuda=cfg.policy.cuda)
     policy = create_policy(cfg.policy, model=model, enable_field=[
                            'learn', 'collect', 'eval', 'command'])
-
+    if cfg.policy.get('load_path', None) is not None:
+        print('🪅')
+        policy._load_state_dict_learn(torch.load(cfg.policy.load_path))
     # Create worker components: learner, collector, evaluator, replay buffer, commander.
     tb_logger = SummaryWriter(os.path.join(
         './logs/{}/'.format(cfg.exp_name), 'serial')) if get_rank() == 0 else None

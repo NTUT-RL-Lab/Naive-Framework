@@ -90,11 +90,33 @@ def not_die_eval(main_config: EasyDict, create_config: EasyDict, ckpt_path: str)
     cfg = compile_config(main_config, create_cfg=create_config, auto=True)
 
     coef = Coef(main_config.conf_path)
-    director = Director(coef)
-    envs = director.birth_envs()
-    # env = DingEnvWrapper(gym.make("Facade/container-v0", envs=deepcopy(
-    #     envs), director=deepcopy(director)))
+    for i in range(coef.n_envs):
+        director = Director(coef)
+        envs = director.birth_envs(eval=True)
+        # env = DingEnvWrapper(gym.make("Facade/container-v0", envs=deepcopy(
+        #     envs), director=deepcopy(director)))
 
+        director.blend = False
+        facade = gym.make("Facade/container-v0", envs=envs, director=director)
+        env_name = coef.env_ids[i]
+        logger.info(f"evaluating env {env_name}")
+        director.set_eval(i)
+        evaluator_env_fn = [lambda: DingEnvWrapper(
+            facade) for _ in range(1)]
+        env = create_env_manager(
+            cfg.env.manager, env_fn=evaluator_env_fn)
+        # Enable the video recording of the environment and set the video saving folder
+        env.enable_save_replay(
+            replay_path=f'./not_die_logs/{main_config.exp_name}/{env_name}_video')
+        policy = create_policy(cfg.policy, model=None, enable_field=[
+            'learn', 'collect', 'eval', 'command'])
+        policy.eval_mode.load_state_dict(torch.load(
+            ckpt_path, map_location='cpu'))
+        evaluator = InteractionSerialEvaluator(
+            cfg.policy.eval.evaluator, env, policy.eval_mode, exp_name=cfg.exp_name
+        )
+        evaluator.eval()
+    return
     evaluator_env_fn = [lambda: DingEnvWrapper(gym.make("Facade/container-v0", envs=deepcopy(
         envs), director=deepcopy(director))) for _ in range(cfg.env.evaluator_env_num)]
     env = create_env_manager(

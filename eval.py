@@ -24,6 +24,7 @@ def eval_exp(config_path, model_path, env_id=-1, episodes=1000,  render=False):
     director = Director(coef)
     envs = director.birth_envs()
     facade = Facade(envs, director=director)
+    facade.blend = False
     # model = coef.algorithm(policy=coef.policy, env=facade, seed=coef.seed)
     # model.load(model_path)
     model = coef.algorithm.load(model_path, env=facade)

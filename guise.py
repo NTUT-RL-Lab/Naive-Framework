@@ -115,7 +115,8 @@ class Guise(PixelObservationWrapper):
         observation = cv2.resize(
             cv2.cvtColor(obs['pixels'], cv2.COLOR_RGB2GRAY), self.shape[1:], interpolation=cv2.INTER_AREA)
         # save the image
-        # cv2.imwrite("logs/image.png", observation)
+        # cv2.imwrite(
+        #     "logs/image.png", observation.reshape(self.observation_space.shape).astype(np.float32)[0])
         self.steps += 1
         return observation.reshape(self.observation_space.shape).astype(np.float32)
 

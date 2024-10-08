@@ -28,6 +28,7 @@ class Director():
         self.env_steps = [0] * self.n_envs
         self.cumulative_reward = [0] * self.n_envs
         self.action_mappings = coef.act_mapping
+        self.blend = coef.blend
         self.rnd_score = coef.rnd_score  # random score for each env
         self.model: BaseAlgorithm = None
         self.model_class: BaseAlgorithm = None
@@ -163,7 +164,7 @@ class Director():
         """
         self.model.save(path)
 
-    def birth_envs(self) -> list[Guise]:
+    def birth_envs(self, eval=False) -> list[Guise]:
         """Births the environments
         """
         max_w, max_h = 0, 0
@@ -204,8 +205,9 @@ class Director():
             logger.info(f"mapping for disguises[{i}]: {mapping}")
             disguises[i].init_action_mapping(
                 mapping, origin_space=disguises[i].action_space.n)
-            disguises[i].init_reward_coef(
-                reward_coef[i])
+            if not eval:
+                disguises[i].init_reward_coef(
+                    reward_coef[i])
         # calculte the reward coefficient, based on the random score square of each env
 
         return disguises

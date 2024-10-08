@@ -8,4 +8,5 @@ eval_episodes = 5                                   # number of evaluation episo
 seed = 42                                           # random seed
 device = "cuda"                                     # computation device
 env_weights = [0.5, 0.5]
-env_ids = ["ALE/Galaxian-v5", "ALE/DemonAttack-v5"]
+env_ids = ["ALE/DemonAttack-v5", "ALE/Galaxian-v5"]
+exp_name = "demon_galaxian_rainbow_algo2"
