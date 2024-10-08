@@ -1,9 +1,7 @@
 from typing import Union, Optional, List, Any, Tuple
 import os
-from pkg_resources import evaluate_marker
 import torch
 from ditk import logging
-from functools import partial
 from tensorboardX import SummaryWriter
 from copy import deepcopy
 
@@ -17,41 +15,30 @@ from ding.entry.utils import random_collect
 from ditk import logging
 import gymnasium as gym
 from director import Director
-from gymnasium import logger
-from gymnasium.wrappers.pixel_observation import PixelObservationWrapper
-from gymnasium.wrappers.resize_observation import ResizeObservation
 from coef import Coef
 from facade import Facade
 from stable_baselines3 import *
-from guise import Guise
-import numpy as np
-import argparse
 from copy import deepcopy
 from ding.framework.middleware import online_logger
 from ding.envs.env import DingEnvWrapper
-from ding.envs import SubprocessEnvManagerV2, BaseEnvManagerV2
-from ding.model import GTrXLDQN
-from ding.policy import R2D2GTrXLPolicy
-from config.die_r2d2_gtrxl import spaceinvaders_r2d2_gtrxl_config, spaceinvaders_r2d2_gtrxl_create_config
 from ding.config import compile_config
-from ding.data import DequeBuffer
 import env_container
-from ding.framework import ding_init
 from tensorboardX import SummaryWriter
 from ding.utils import set_pkg_seed, get_rank
 from ding.worker import create_buffer
 import os
 from ding.policy import create_policy
+from config.die_algorithms import *
 
 
 def not_alone(
-        input_cfg: Union[str, Tuple[dict, dict]],
         seed: int = 0,
         env_setting: Optional[List[Any]] = None,
         model: Optional[torch.nn.Module] = None,
         max_train_iter: Optional[int] = int(1e10),
         max_env_step: Optional[int] = int(1e10),
         dynamic_seed: Optional[bool] = True,
+        config_path: Optional[str] = None
 ) -> 'Policy':  # noqa
     """
     Overview:
@@ -70,6 +57,8 @@ def not_alone(
     Returns:
         - policy (:obj:`Policy`): Converged policy.
     """
+    coef = Coef(config_path, rlf="ding")
+    input_cfg = (coef.algorithm.main_config, coef.algorithm.create_config)
     if isinstance(input_cfg, str):
         cfg, create_cfg = read_config(input_cfg)
     else:
@@ -78,15 +67,9 @@ def not_alone(
     env_fn = None if env_setting is None else env_setting[0]
     cfg = compile_config(cfg, seed=seed, env=env_fn,
                          auto=True, create_cfg=create_cfg, save_cfg=True)
-    # Create main components: env, policy
-    # if env_setting is None:
-    #     env_fn, collector_env_cfg, evaluator_env_cfg = get_vec_env_setting(cfg.env)
-    # else:
-    #     env_fn, collector_env_cfg, evaluator_env_cfg = env_setting
-    # collector_env = create_env_manager(cfg.env.manager, [partial(env_fn, cfg=c) for c in collector_env_cfg])
-    # evaluator_env = create_env_manager(cfg.env.manager, [partial(env_fn, cfg=c) for c in evaluator_env_cfg])
-    coef = Coef(cfg.conf_path)
+    max_env_step = coef.n_timestep
     director = Director(coef)
+    cfg.exp_name = deepcopy(director.exp_name)
     envs = director.birth_envs()
     collector_env_fn = [lambda: DingEnvWrapper(gym.make("Facade/container-v0", envs=deepcopy(
         envs), director=deepcopy(director))) for _ in range(cfg.env.collector_env_num)]
@@ -102,13 +85,13 @@ def not_alone(
     policy = create_policy(cfg.policy, model=model, enable_field=[
                            'learn', 'collect', 'eval', 'command'])
     if cfg.policy.get('load_path', None) is not None:
-        print('🪅')
+        print('Loading pre-trained model🪅')
         policy._load_state_dict_learn(torch.load(cfg.policy.load_path))
     # Create worker components: learner, collector, evaluator, replay buffer, commander.
     tb_logger = SummaryWriter(os.path.join(
-        './logs/{}/'.format(cfg.exp_name), 'serial')) if get_rank() == 0 else None
+        './logs/{}/'.format(cfg.exp_name))) if get_rank() == 0 else None
     learner = BaseLearner(cfg.policy.learn.learner,
-                          policy.learn_mode, tb_logger, exp_name=f"not_die_logs/{cfg.exp_name}")
+                          policy.learn_mode, tb_logger, exp_name=f"logs/{cfg.exp_name}")
     collector = create_serial_collector(
         cfg.policy.collect.collector,
         env=collector_env,
@@ -188,6 +171,12 @@ def not_alone(
     return policy
 
 
-if __name__ == '__main__':
-    not_alone((spaceinvaders_r2d2_gtrxl_config,
-               spaceinvaders_r2d2_gtrxl_create_config), seed=0, max_env_step=30000000)
+def get_config(algo):
+    cls = None
+    if algo == "rainbow":
+        cls = die_rainbow
+    elif algo == "r2d2":
+        cls = die_r2d2
+    else:
+        raise ValueError("Algorithm not supported")
+    return (cls.main_config, cls.create_config)

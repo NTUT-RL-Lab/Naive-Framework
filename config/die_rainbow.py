@@ -1,19 +1,13 @@
-from copy import deepcopy
 from easydict import EasyDict
-from not_die_alone import not_alone
-from not_die_eval import not_die_eval
 dg_rainbow_config = dict(
-    exp_name='demon_galaxian_rainbow_algo2',
-    conf_path='config/demon_galaxian.toml',
     env=dict(
-        collector_env_num=8,
-        evaluator_env_num=8,
+        collector_env_num=1,
+        evaluator_env_num=1,
         n_evaluator_episode=8,
         stop_value=10000000,
         manager=dict(shared_memory=False, )
     ),
     policy=dict(
-        # model_path='not_die_logs\demon_phoenix_rainbow_algo2\ckpt\ckpt_best.pth.tar',
         cuda=True,
         priority=False,
         priority_IS_weight=False,
@@ -58,10 +52,10 @@ dg_rainbow_create_config = EasyDict(
 create_config = dg_rainbow_create_config
 
 
-def main():
-    not_alone((main_config, create_config), seed=0, max_env_step=10000000)
+# def main():
+#     not_alone((main_config, create_config), seed=0, max_env_step=10000000)
 
 
-def eval():
-    not_die_eval(main_config, create_config,
-                 'not_die_logs\demon_galaxian_rainbow_algo2_240924_093922\ckpt\ckpt_best.pth.tar')
+# def eval():
+#     not_die_eval(main_config, create_config,
+#                  'not_die_logs\demon_galaxian_rainbow_algo2_240924_093922\ckpt\ckpt_best.pth.tar')

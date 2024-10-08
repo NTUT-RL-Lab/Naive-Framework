@@ -1,9 +1,11 @@
+import os
 import stat
 from typing import List, Callable
 import numpy as np
 import tomllib
 from stable_baselines3 import *
 from stable_baselines3.common.base_class import BaseAlgorithm
+from config.die_algorithms import *
 # c_ means a coeffiecent
 # Director's Coef
 '''
@@ -57,11 +59,11 @@ class Coef:
             n_envs (int): number of envs
             env_ids (List[str]): envs' ids
             act_mapping (List[dict[int, str]] | Callable[[np.ndarray], np.ndarray | int]): action mapping for each env
-            c_transition_loss: 
-            policy (str): 
-            eval_freq (int): 
-            eval_episodes (int): 
-            seed (int): 
+            c_transition_loss:
+            policy (str):
+            eval_freq (int):
+            eval_episodes (int):
+            seed (int):
             device (str):
         """
         coef = Coef()
@@ -81,28 +83,37 @@ class Coef:
         coef.device = device
         return coef
 
-    def __init__(self, config_file: str = None):
+    def __init__(self, config_file: str = None, rlf: str = "sb3"):
+        print(config_file)
         if config_file is None:
             return
         # load from file
-        with open(config_file, "rb") as f:
+        with open(os.path.join('config', config_file), "rb") as f:
             config = tomllib.load(f)
-
+        print(config)
         self.n_timestep = config["n_timestep"]
         self.c_lr = config["c_lr"]
         self.cap = config["cap"]
         self.env_weights = config["env_weights"]
         self.env_ids = config["env_ids"]
         self.c_transition_loss = config["c_transition_loss"]
-        algo_map: dict[str, BaseAlgorithm] = {
-            "PPO": PPO,
-            "DQN": DQN,
-            "SAC": SAC,
-            "TD3": TD3,
-            "A2C": A2C,
-            "DDPG": DDPG
-        }
+        algo_map = None
+        if rlf == "ding":
+            algo_map = {
+                "rainbow": die_rainbow,
+                "r2d2": die_r2d2
+            }
+        elif rlf == "sb3":
+            algo_map = {
+                "PPO": PPO,
+                "DQN": DQN,
+                "SAC": SAC,
+                "TD3": TD3,
+                "A2C": A2C,
+                "DDPG": DDPG
+            }
         self.algorithm = algo_map[config.get("algorithm", "PPO")]
+        self.algorithm_name = config.get("algorithm", "PPO")
         self.policy = config["policy"]
         self.eval_freq = config["eval_freq"]
         self.eval_episodes = config["eval_episodes"]

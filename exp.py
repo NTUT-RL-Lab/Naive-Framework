@@ -18,13 +18,21 @@ def main():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, required=True)
-    parser.add_argument("--config", type=str, required=True)
+    parser.add_argument("--rlf", "--rlframework", type=str, required=True)
+    parser.add_argument("--m", "--model", type=str, required=False)
+    parser.add_argument("--c", "--config", type=str, required=True)
     args = parser.parse_args()
+    print(args)
+    if args.rlf == "sb3":
+        sb3Pipeline(args)
+    elif args.rlf == "ding":
+        dingPipeline(args)
 
-    coef = Coef("config/" + args.config)
+
+def sb3Pipeline(args):
+    coef = Coef("config/" + args.c, rlf="sb3")
     logger.set_level(logger.INFO)
-    logger.info("👻")
+    logger.info("🙏")
     director = Director(coef)
     envs = director.birth_envs()
     facade = Facade(envs, director=director)
@@ -33,7 +41,12 @@ def main():
     director.set_model(model)
     director.learn()
     print("Learning done")
-    director.save("models/" + args.model)
+    director.save("models/" + args.m)
+
+
+def dingPipeline(args):
+    from not_die_alone import not_alone
+    not_alone(config_path=args.c)
 
 
 if __name__ == '__main__':

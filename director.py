@@ -13,6 +13,7 @@ import re
 
 class Director():
     def __init__(self, coef: Coef) -> None:
+        coef.algorithm = None  # not needed
         self.coef = coef
         self.n_timestep = coef.n_timestep
         self.c_lr = coef.c_lr
@@ -50,7 +51,7 @@ class Director():
         self.last_performance = np.ones(self.n_envs) * 100000000000
         for env_id in self.env_ids:
             self.exp_name += re.sub('[^0-9a-zA-Z]+', '_', env_id) + "_"
-        self.exp_name += f"{self.coef.algorithm.__name__}_{coef.switching_algorithm}_{self.n_timestep//1_000_000}M_{self.c_lr}_{self.cap}"
+        self.exp_name += f"{self.coef.algorithm_name}_{coef.switching_algorithm}_{self.n_timestep//1_000_000}M_{self.c_lr}_{self.cap}"
 
     def set_model(self, model: BaseAlgorithm) -> None:
         """Sets the model to be used for learning"""
