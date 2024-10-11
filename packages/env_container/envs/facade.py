@@ -9,7 +9,6 @@ class Facade(Wrapper):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
 
     def __init__(self, envs, director) -> None:
-        print("im here")
         """Constructor for the Facade class
         Args:
             envs (List[Env]): List of environments to be used

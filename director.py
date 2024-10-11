@@ -163,6 +163,7 @@ class Director():
     def save(self, path: str) -> None:
         """Saves the model
         """
+        return
         self.model.save(path)
 
     def birth_envs(self, eval=False) -> list[Guise]:

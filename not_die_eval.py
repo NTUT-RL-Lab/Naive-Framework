@@ -82,14 +82,14 @@ def not_die_eval_o口O(main_config: EasyDict, create_config: EasyDict, ckpt_path
     print(f'Deploy is finished, final epsiode return is: {returns}')
 
 
-def not_die_eval(main_config: EasyDict, create_config: EasyDict, ckpt_path: str):
+def not_die_eval(main_config: EasyDict, create_config: EasyDict, ckpt_path: str, config_path: str):
     # Set the name of the experiment to be run in this deployment, which is the name of the project folder to be created
-    main_config.exp_name += '_eval'
     # Compile and generate all configurations
     create_config.policy.type = create_config.policy.type + '_command'
     cfg = compile_config(main_config, create_cfg=create_config, auto=True)
 
     coef = Coef(main_config.conf_path)
+    main_config.exp_name += '_eval'
     for i in range(coef.n_envs):
         director = Director(coef)
         envs = director.birth_envs(eval=True)

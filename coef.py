@@ -5,7 +5,6 @@ import numpy as np
 import tomllib
 from stable_baselines3 import *
 from stable_baselines3.common.base_class import BaseAlgorithm
-from config.die_algorithms import *
 # c_ means a coeffiecent
 # Director's Coef
 '''
@@ -100,8 +99,8 @@ class Coef:
         algo_map = None
         if rlf == "ding":
             algo_map = {
-                "rainbow": die_rainbow,
-                "r2d2": die_r2d2
+                "rainbow": "rainbow",
+                "r2d2": "r2d2"
             }
         elif rlf == "sb3":
             algo_map = {

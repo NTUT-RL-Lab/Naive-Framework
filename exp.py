@@ -1,5 +1,6 @@
 from logging import config
 import gymnasium as gym
+import ding_pipeline
 from director import Director
 from gymnasium import logger
 from gymnasium.wrappers.pixel_observation import PixelObservationWrapper
@@ -45,8 +46,8 @@ def sb3Pipeline(args):
 
 
 def dingPipeline(args):
-    from not_die_alone import not_alone
-    not_alone(config_path=args.c)
+    from ding_pipeline import serial_pipeline
+    serial_pipeline(config_path=args.c)
 
 
 if __name__ == '__main__':

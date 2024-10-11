@@ -28,10 +28,11 @@ from ding.utils import set_pkg_seed, get_rank
 from ding.worker import create_buffer
 import os
 from ding.policy import create_policy
-from config.die_algorithms import *
+# from config.die_algorithms import *
 
 
 def not_alone(
+        input_cfg=None,
         seed: int = 0,
         env_setting: Optional[List[Any]] = None,
         model: Optional[torch.nn.Module] = None,
@@ -58,7 +59,6 @@ def not_alone(
         - policy (:obj:`Policy`): Converged policy.
     """
     coef = Coef(config_path, rlf="ding")
-    input_cfg = (coef.algorithm.main_config, coef.algorithm.create_config)
     if isinstance(input_cfg, str):
         cfg, create_cfg = read_config(input_cfg)
     else:
@@ -169,14 +169,3 @@ def not_alone(
             }
             pickle.dump(final_data, f)
     return policy
-
-
-def get_config(algo):
-    cls = None
-    if algo == "rainbow":
-        cls = die_rainbow
-    elif algo == "r2d2":
-        cls = die_r2d2
-    else:
-        raise ValueError("Algorithm not supported")
-    return (cls.main_config, cls.create_config)

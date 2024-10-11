@@ -1,5 +1,7 @@
 from easydict import EasyDict
 
+from not_die_alone import not_alone
+
 spaceinvaders_r2d2_gtrxl_config = dict(
     exp_name='models/spaceinvaders_r2d2_gtrxl_seed0',
     env=dict(
@@ -77,8 +79,6 @@ spaceinvaders_r2d2_gtrxl_create_config = EasyDict(
     spaceinvaders_r2d2_gtrxl_create_config)
 create_config = spaceinvaders_r2d2_gtrxl_create_config
 
-if __name__ == '__main__':
-    # or you can enter ding -m serial -c spaceinvaders_r2d2_gtrxl_config.py -s 0
-    from ding.entry import serial_pipeline
-    serial_pipeline((main_config, create_config),
-                    seed=0, max_env_step=30000000)
+
+def main(config_path):
+    not_alone((main_config, create_config), config_path=config_path)

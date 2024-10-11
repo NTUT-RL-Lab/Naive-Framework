@@ -4,7 +4,7 @@ from not_die_alone import not_alone
 from not_die_eval import not_die_eval
 phoenix_rainbow_config = dict(
     exp_name='dp_20M_rainbow_blend_last_try',
-    conf_path='config/dp_blend_DQN.toml',
+    conf_path='dp_blend_DQN.toml',
     env=dict(
         collector_env_num=8,
         evaluator_env_num=8,
@@ -59,7 +59,8 @@ create_config = phoenix_rainbow_create_config
 
 
 def main():
-    not_alone((main_config, create_config), seed=0, max_env_step=20000000)
+    not_alone((main_config, create_config), seed=0,
+              max_env_step=20000000, config_path='dp_blend_DQN.toml')
 
 
 def eval():

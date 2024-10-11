@@ -1,4 +1,6 @@
 from easydict import EasyDict
+from not_die_alone import not_alone
+from not_die_eval import not_die_eval
 dg_rainbow_config = dict(
     env=dict(
         collector_env_num=1,
@@ -52,10 +54,10 @@ dg_rainbow_create_config = EasyDict(
 create_config = dg_rainbow_create_config
 
 
-# def main():
-#     not_alone((main_config, create_config), seed=0, max_env_step=10000000)
+def main(config_path):
+    not_alone((main_config, create_config), config_path=config_path)
 
 
-# def eval():
-#     not_die_eval(main_config, create_config,
-#                  'not_die_logs\demon_galaxian_rainbow_algo2_240924_093922\ckpt\ckpt_best.pth.tar')
+def eval(config_path, model_path):
+    not_die_eval(main_config, create_config,
+                 ckpt_path=model_path, config_path=config_path)

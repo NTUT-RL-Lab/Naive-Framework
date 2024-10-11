@@ -119,6 +119,7 @@ def render_env(model, facade: Facade, env_name, model_name, episodes=1000):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument("--rlf", "--rlframework", type=str, required=True)
     parser.add_argument("--model", type=str, required=True)
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--env_id", type=int, default=-1,
@@ -128,5 +129,9 @@ if __name__ == '__main__':
     parser.add_argument("--render", type=bool, default=True,
                         help="render the evaluation", required=False)
     args = parser.parse_args()
-    eval_exp("config/"+args.config, "models/"+args.model, args.env_id,
-             args.episodes, args.render)
+    if args.rlf == "sb3":
+        eval_exp("config/"+args.config, "models/"+args.model, args.env_id,
+                 args.episodes, args.render)
+    elif args.rlf == "ding":
+        from ding_pipeline import eval
+        eval(args.config, args.model)
