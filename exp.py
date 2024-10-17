@@ -23,7 +23,6 @@ def main():
     parser.add_argument("--m", "--model", type=str, required=False)
     parser.add_argument("--c", "--config", type=str, required=True)
     args = parser.parse_args()
-    print(args)
     if args.rlf == "sb3":
         sb3Pipeline(args)
     elif args.rlf == "ding":
@@ -31,18 +30,19 @@ def main():
 
 
 def sb3Pipeline(args):
-    coef = Coef("config/" + args.c, rlf="sb3")
+    coef = Coef(args.c, rlf="sb3")
     logger.set_level(logger.INFO)
     logger.info("🙏")
     director = Director(coef)
     envs = director.birth_envs()
     facade = Facade(envs, director=director)
+    print(coef.algorithm)
     model = coef.algorithm(policy=coef.policy, env=facade,
-                           tensorboard_log="logs/", seed=coef.seed, learning_rate=coef.c_lr)
+                           tensorboard_log="logs/", seed=coef.seed, learning_rate=coef.c_lr, policy_kwargs=dict(normalize_images=False))
     director.set_model(model)
     director.learn()
     print("Learning done")
-    director.save("models/" + args.m)
+    director.save("models/" + director.exp_name)
 
 
 def dingPipeline(args):

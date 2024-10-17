@@ -83,13 +83,12 @@ class Coef:
         return coef
 
     def __init__(self, config_file: str = None, rlf: str = "sb3"):
-        print(config_file)
         if config_file is None:
             return
         # load from file
         with open(os.path.join('config', config_file), "rb") as f:
             config = tomllib.load(f)
-        print(config)
+        self.rlf = rlf
         self.n_timestep = config["n_timestep"]
         self.c_lr = config["c_lr"]
         self.cap = config["cap"]
@@ -109,7 +108,8 @@ class Coef:
                 "SAC": SAC,
                 "TD3": TD3,
                 "A2C": A2C,
-                "DDPG": DDPG
+                "DDPG": DDPG,
+                "rainbow": DQN
             }
         self.algorithm = algo_map[config.get("algorithm", "PPO")]
         self.algorithm_name = config.get("algorithm", "PPO")

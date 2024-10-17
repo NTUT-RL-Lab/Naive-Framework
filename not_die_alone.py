@@ -66,10 +66,10 @@ def not_alone(
     create_cfg.policy.type = create_cfg.policy.type + '_command'
     env_fn = None if env_setting is None else env_setting[0]
     cfg = compile_config(cfg, seed=seed, env=env_fn,
-                         auto=True, create_cfg=create_cfg, save_cfg=True)
+                         auto=True, create_cfg=create_cfg, save_cfg=False)
     max_env_step = coef.n_timestep
     director = Director(coef)
-    cfg.exp_name = deepcopy(director.exp_name)
+    cfg.exp_name = director.exp_name
     envs = director.birth_envs()
     collector_env_fn = [lambda: DingEnvWrapper(gym.make("Facade/container-v0", envs=deepcopy(
         envs), director=deepcopy(director))) for _ in range(cfg.env.collector_env_num)]
@@ -92,6 +92,7 @@ def not_alone(
         './logs/{}/'.format(cfg.exp_name))) if get_rank() == 0 else None
     learner = BaseLearner(cfg.policy.learn.learner,
                           policy.learn_mode, tb_logger, exp_name=f"logs/{cfg.exp_name}")
+    cfg.exp_name = './_/' + director.exp_name
     collector = create_serial_collector(
         cfg.policy.collect.collector,
         env=collector_env,

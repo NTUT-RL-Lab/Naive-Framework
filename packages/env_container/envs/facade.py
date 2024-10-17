@@ -162,5 +162,5 @@ class Facade(Wrapper):
         if self.blend:
             for env in self.envs:
                 env.close()
-            return
+            return None
         return super().close()

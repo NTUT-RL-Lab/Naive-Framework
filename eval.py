@@ -27,6 +27,8 @@ def eval_exp(config_path, model_path, env_id=-1, episodes=1000,  render=False):
     facade.blend = False
     # model = coef.algorithm(policy=coef.policy, env=facade, seed=coef.seed)
     # model.load(model_path)
+    if model_path is None:
+        model_path = os.path.join('models', director.exp_name)
     model = coef.algorithm.load(model_path, env=facade)
     if env_id == -1:
         logger.info("evaluating all envs")
@@ -120,7 +122,7 @@ def render_env(model, facade: Facade, env_name, model_name, episodes=1000):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--rlf", "--rlframework", type=str, required=True)
-    parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--model", type=str, required=False)
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--env_id", type=int, default=-1,
                         help="environment id to evaluate", required=False)
@@ -130,7 +132,7 @@ if __name__ == '__main__':
                         help="render the evaluation", required=False)
     args = parser.parse_args()
     if args.rlf == "sb3":
-        eval_exp("config/"+args.config, "models/"+args.model, args.env_id,
+        eval_exp(args.config, args.model, args.env_id,
                  args.episodes, args.render)
     elif args.rlf == "ding":
         from ding_pipeline import eval

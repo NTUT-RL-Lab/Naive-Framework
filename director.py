@@ -1,3 +1,4 @@
+import datetime
 from guise import Guise
 from typing import Any
 import gymnasium as gym
@@ -13,7 +14,6 @@ import re
 
 class Director():
     def __init__(self, coef: Coef) -> None:
-        coef.algorithm = None  # not needed
         self.coef = coef
         self.n_timestep = coef.n_timestep
         self.c_lr = coef.c_lr
@@ -51,7 +51,9 @@ class Director():
         self.last_performance = np.ones(self.n_envs) * 100000000000
         for env_id in self.env_ids:
             self.exp_name += re.sub('[^0-9a-zA-Z]+', '_', env_id) + "_"
-        self.exp_name += f"{self.coef.algorithm_name}_{coef.switching_algorithm}_{self.n_timestep//1_000_000}M_{self.c_lr}_{self.cap}"
+        self.exp_name += f"{self.coef.algorithm_name}_{coef.switching_algorithm}_{self.n_timestep//1_000_000}M"
+        # add timestamp to the name
+        self.exp_name += '_'+datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     def set_model(self, model: BaseAlgorithm) -> None:
         """Sets the model to be used for learning"""
@@ -163,8 +165,8 @@ class Director():
     def save(self, path: str) -> None:
         """Saves the model
         """
-        return
-        self.model.save(path)
+        if self.coef.rlf == "sb3":
+            self.model.save(path)
 
     def birth_envs(self, eval=False) -> list[Guise]:
         """Births the environments
