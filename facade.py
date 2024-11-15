@@ -1,5 +1,9 @@
+from typing import Any
+import numpy as np
+import gymnasium as gym
 from typing import List
 from gymnasium import Env, logger, Wrapper
+from matplotlib.pylab import f
 from director import Director
 from guise import Guise
 
@@ -21,7 +25,14 @@ class Facade(Wrapper):
             env.reset()
         self.env = envs[0]
         self.director = director
+        self.blend = director.blend
+        self._reward_space = gym.spaces.Box(
+            low=0.0, high=1.0, shape=(1, ), dtype=np.float32)
         super().__init__(envs[0])
+
+    @property
+    def reward_space(self):
+        return self._reward_space
 
     def switch_env(self, index: int) -> None:
         """Switches the environment to the one at the index
@@ -32,13 +43,58 @@ class Facade(Wrapper):
             raise ValueError("Invalid index provided")
         if (index == self.index):
             return
+        # logger.info(f"Switching to env {index}")
         self.index = index
         self.env = self.envs[index]
 
     def step(self, action):
         """Step function to step the environment
         """
-        result = super().step(self.env.map_action(action))
-        index,  = self.director.update(result)
+
+        if self.blend:
+            observations, rewards, terminateds, truncateds, infos = [], [], [], [], []
+            for index in range(len(self.envs)):
+                self.switch_env(index)
+                observation, reward, terminated, truncated, info = super().step(
+                    self.env.map_action(action))
+                observations.append(observation)
+                rewards.append(self.env.reward(reward))
+                terminateds.append(terminated)
+                truncateds.append(truncated)
+                infos.append(info)
+            observation = np.mean(observations, axis=0)
+            reward = np.max(rewards)
+            terminated = np.min(terminateds) != 0
+            truncated = np.min(truncateds) != 0
+            info = {k: np.mean([i[k] for i in infos]) for k in infos[0]}
+            return observation, reward, terminated, truncated, info
+        observation, reward, terminated, truncated, info = super().step(
+            self.env.map_action(action))
+        # apply reward weights
+        reward = self.env.reward(reward)
+
+        index,  = self.director.update(
+            observation, reward, terminated, truncated, info)
         self.switch_env(index)
-        return result
+        return observation, reward, terminated, truncated, info
+
+    def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
+        if self.blend:
+            observations = []
+            infos = []
+            for index in range(len(self.envs)):
+                self.switch_env(index)
+                obs, info = super().reset(seed=seed, options=options)
+                observations.append(obs)
+                infos.append(info)
+            return np.mean(observations, axis=0), {k: np.mean([i[k] for i in infos]) for k in infos[0]}
+
+        observation, infos = super().reset(seed=seed, options=options)
+        return observation, infos
+
+    def close(self):
+        if self.blend:
+            for env in self.envs:
+                env.close()
+            return
+        return super().close()

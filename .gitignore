@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Jetbrains
+.idea/
+
 # C extensions
 *.so
 
@@ -162,3 +165,12 @@ cython_debug/
 
 # models
 models/
+
+# logs
+logs/
+not_die_logs/
+
+# playground
+playground*
+
+_

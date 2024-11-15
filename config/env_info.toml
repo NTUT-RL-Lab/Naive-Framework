@@ -1,0 +1,96 @@
+
+[LunarLander-v2]
+[LunarLander-v2.mappings]
+0 = "NOOP"
+1 = "LEFT"
+2 = "UP"
+3 = "RIGHT"
+
+[Acrobot-v1]
+[Acrobot-v1.mappings]
+0 = "LEFT"
+1 = "NOOP"
+2 = "RIGHT"
+
+["ALE/Breakout-v5"]
+["ALE/Breakout-v5".mappings]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+["ALE/Breakout-v5".info]
+rnd_score = 1.7
+
+["ALE/SpaceInvaders-v5"]
+["ALE/SpaceInvaders-v5".mappings]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+4 = "RIGHTFIRE"
+5 = "LEFTFIRE"
+["ALE/SpaceInvaders-v5".info]
+rnd_score = 148.0
+
+["ALE/Galaxian-v5"]
+["ALE/Galaxian-v5".mappings]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+4 = "RIGHTFIRE"
+5 = "LEFTFIRE"
+["ALE/Galaxian-v5".info]
+rnd_score = 165.0
+
+["ALE/DemonAttack-v5"]
+["ALE/DemonAttack-v5".mappings]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+4 = "RIGHTFIRE"
+5 = "LEFTFIRE"
+["ALE/DemonAttack-v5".info]
+rnd_score = 152.1
+
+["ALE/Phoenix-v5"]
+["ALE/Phoenix-v5".mappings]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+4 = "DOWN"
+5 = "RIGHTFIRE"
+6 = "LEFTFIRE"
+7 = "DOWNFIRE"
+["ALE/Phoenix-v5".info]
+rnd_score = 761.4
+
+["ALE/BeamRider-v5"]
+["ALE/BeamRider-v5".mappings]
+0 = "NOOP"
+1 = "FIRE"
+2 = "UP"
+3 = "RIGHT"
+4 = "LEFT"
+5 = "UPRIGHT"
+6 = "UPLEFT"
+7 = "RIGHTFIRE"
+8 = "LEFTFIRE"
+["ALE/BeamRider-v5".info]
+rnd_score = 363.9
+
+["ALE/Enduro-v5"]
+["ALE/Enduro-v5".mappings]
+0 = "NOOP"
+1 = "FIRE"
+2 = "RIGHT"
+3 = "LEFT"
+4 = "DOWN"
+5 = "DOWNRIGHT"
+6 = "DOWNLEFT"
+7 = "RIGHTFIRE"
+8 = "LEFTFIRE"
+["ALE/Enduro-v5".info]
+rnd_score = 0.0

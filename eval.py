@@ -1,60 +1,139 @@
+from copy import deepcopy
 import re
 from stable_baselines3 import *
 import gymnasium as gym
 from gymnasium import logger
 from director import Director
-from exp import birth_envs
 from facade import Facade
 import argparse
 from stable_baselines3.common.evaluation import evaluate_policy
 from guise import Guise
 from coef import Coef
+from typing import Any, Dict
+import numpy as np
+from gymnasium.error import DependencyNotInstalled
+import os
 # load model and evaluate
-if __name__ == '__main__':
-    coef = Coef(
-        n_timestep=10000,
-        c_lr=0.0001,
-        cap=1000,
-        env_weights=[0.5, 0.5],
-        n_envs=1,
-        env_ids=["LunarLander-v2"],
-        act_mapping=[{0: "NOOP", 1: "LEFT", 2: "UP",
-                      3: "RIGHT"}],
-        c_transition_loss=0.5,
-        policy="MlpPolicy",
-        eval_freq=1000,
-        eval_episodes=1000,
-        seed=123,
-        device="cuda"
-    )
-    logger.set_level(logger.INFO)
-    logger.info("👻")
-    director = Director(coef)
-    envs = birth_envs(coef.env_ids, coef.act_mapping)
-    facade = Facade(envs, director=director)
-    model = PPO(coef.policy, facade)
-    model.load("models/v0.1")
-    vec_env = model.get_env()
-    obs = vec_env.reset()
-    while True:
-        action, _states = model.predict(obs)
-        obs, rewards, dones, info = vec_env.step(action)
-        vec_env.render("human")
-        if dones:
-            break
-    vec_env.close()
-    vec_env.reset()
-    # yes fancy evaluation for now
-    std, mean = evaluate_policy(model, vec_env, n_eval_episodes=1000)
-    print(f"mean: {mean}, std: {std}")
 
-    # no parser for now
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("--model", type=str, required=True)
-    # parser.add_argument("--env", type=str, required=True)
-    # args = parser.parse_args()
-    # model = PPO.load(args.model)
-    # env = gym.make(args.env, render_mode= "human")
-    # observation, info = env.reset()
-    # mean, std = evaluate_policy(model, env, n_eval_episodes=1000)
-    # print(f"mean: {mean}, std: {std}")
+
+def eval_exp(config_path, model_path, env_id=-1, episodes=1000,  render=False):
+    """Evaluates the experiment
+    """
+    logger.set_level(logger.INFO)
+    coef = Coef(config_path)
+    director = Director(coef)
+    envs = director.birth_envs()
+    facade = Facade(envs, director=director)
+    facade.blend = False
+    # model = coef.algorithm(policy=coef.policy, env=facade, seed=coef.seed)
+    # model.load(model_path)
+    if model_path is None:
+        model_path = os.path.join('models', director.exp_name)
+    model = coef.algorithm.load(model_path, env=facade)
+    if env_id == -1:
+        logger.info("evaluating all envs")
+        for i in range(coef.n_envs):
+            env_name = coef.env_ids[i]
+            logger.info(f"evaluating env {env_name}")
+            director.set_eval(i)
+            eval_model(model, re.sub(
+                '[^0-9a-zA-Z]+', '_', model_path), re.sub('[^0-9a-zA-Z]+', '_', env_name), facade, episodes, render)
+    else:
+        # WONTFIX
+        logger.info(f"evaluating env {env_id}")
+        coef.env_ids = [coef.env_ids[env_id]]
+        coef.act_mapping = [coef.act_mapping[env_id]]
+        coef.n_envs = 1
+        eval_model(coef, model_path, envs[i], episodes, render)
+
+
+def eval_model(model, model_name, env_name, facade: Facade, episodes=1000,  render=False):
+    """Evaluates the model
+    """
+    screens = []
+
+    def grab_screens(_locals: Dict[str, Any], _globals: Dict[str, Any]) -> None:
+        screen = facade.render()
+        screens.append(screen)
+    # if render:
+    #     render_env(model, facade, env_name, model_name, episodes=1000)
+    # return
+    # yes fancy evaluation for now
+    vec_env = model.get_env()
+    vec_env.reset()
+    std, mean = evaluate_policy(
+        model, vec_env, n_eval_episodes=episodes, callback=grab_screens)
+    if render:
+        logger.info(f"rendering video for {env_name}")
+        path = f"logs/videos/{model_name}"
+        import os
+        import cv2
+        if not os.path.exists(path):
+            os.makedirs(path)
+        # save video
+        height, width, _ = screens[0].shape
+        out = cv2.VideoWriter(
+            f"{path}/{env_name}.avi", cv2.VideoWriter_fourcc(*'DIVX'), 30, (width, height))
+        for screen in screens:
+            out.write(cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
+        out.release()
+
+    print(f"mean: {mean}, std: {std}")
+    return mean, std
+
+
+def render_env(model, facade: Facade, env_name, model_name, episodes=1000):
+    """Renders the environment
+    """
+    screens = []
+    # obs = vec_env.reset()
+    obs, info = facade.reset()
+    while True:
+        action, _states = model.predict(obs, )
+        # logger.info(f"action: {action}")
+        # obs, reward, dones, info = vec_env.step(action)
+        obs, reward, dones, truncated, info = facade.step(action)
+        # vec_env.render("human")
+        screens.append(facade.render())
+        if dones or truncated:
+            # obs = vec_env.reset()
+            facade.reset()
+            temp = 0
+            break
+    # rewards.append(temp)
+    # vec_env.close()
+    facade.close()
+
+    logger.info(f"rendering video for {env_name}")
+    path = f"logs/videos/{model_name}"
+    import os
+    import cv2
+    if not os.path.exists(path):
+        os.makedirs(path)
+    # save video
+    height, width, _ = screens[0].shape
+    out = cv2.VideoWriter(
+        f"{path}/{env_name}.avi", cv2.VideoWriter_fourcc(*'DIVX'), 30, (width, height))
+    for screen in screens:
+        out.write(cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
+    out.release()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--rlf", "--rlframework", type=str, required=True)
+    parser.add_argument("--model", type=str, required=False)
+    parser.add_argument("--config", type=str, required=True)
+    parser.add_argument("--env_id", type=int, default=-1,
+                        help="environment id to evaluate", required=False)
+    parser.add_argument("--episodes", type=int, default=10,
+                        help="number of episodes to evaluate", required=False)
+    parser.add_argument("--render", type=bool, default=True,
+                        help="render the evaluation", required=False)
+    args = parser.parse_args()
+    if args.rlf == "sb3":
+        eval_exp(args.config, args.model, args.env_id,
+                 args.episodes, args.render)
+    elif args.rlf == "ding":
+        from ding_pipeline import eval
+        eval(args.config, args.model)

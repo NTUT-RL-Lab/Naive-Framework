@@ -1,5 +1,5 @@
 from enum import Enum
-OPS_N = 18
+OPS_N = 4
 
 
 class Ops(Enum):
@@ -7,7 +7,7 @@ class Ops(Enum):
     FIRE = 1
     UP = 2
     DOWN = 3
-    LEFT = 5
+    LEFT = 4
     RIGHT = 5
     UPLEFT = 6
     UPRIGHT = 7
