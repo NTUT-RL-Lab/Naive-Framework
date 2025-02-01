@@ -5,17 +5,15 @@ description = "A naive RL framework"
 authors = ["huhuhu0420 <ghostcheng.00@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [
-    { include = "env_container", from = "packages"},
-]
+packages = [{ include = "env_container", from = "packages" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-gymnasium = {extras = ["box2d"], version = "^0.29.1"}
-stable-baselines3 = {extras = ["extra"], version = "^2.2.1"}
-torchvision = {version = "^0.16.2+cu121", source = "pytorch-gpu-src"}
-torchaudio = {version = "^2.1.2+cu121", source = "pytorch-gpu-src"}
-torch = {version = "^2.1.2+cu121", source = "pytorch-gpu-src"}
+gymnasium = { extras = ["box2d"], version = "^0.29.1" }
+stable-baselines3 = { extras = ["extra"], version = "^2.2.1" }
+torchvision = { version = "^0.16.2+cu121", source = "pytorch-gpu-src" }
+torchaudio = { version = "^2.1.2+cu121", source = "pytorch-gpu-src" }
+torch = { version = "^2.1.2+cu121", source = "pytorch-gpu-src" }
 jinja2 = "<3.1.0"
 itsdangerous = "2.0.1"
 werkzeug = "2.0.3"
@@ -23,9 +21,10 @@ numba = "^0.59.1"
 transformers = "^4.41.2"
 
 numpy = "^1.26.4"
-di-engine = {git = "https://github.com/opendilab/DI-engine.git"}
+di-engine = { git = "https://github.com/opendilab/DI-engine.git" }
+# LightZero = { git = "https://github.com/opendilab/LightZero.git" }
 pyecharts = "^2.0.6"
-env = {path = "packages/env_container", develop = true}
+env = { path = "packages/env_container", develop = true }
 [[tool.poetry.source]]
 name = "pytorch-gpu-src"
 url = "https://download.pytorch.org/whl/cu121"

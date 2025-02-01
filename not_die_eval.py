@@ -90,7 +90,7 @@ def choose_exp_dir(exp_dir: str):
     # remove "logs/" in exp_dir
     exp_dir = exp_dir[5:]
     # find all directories with exp_dir prefix
-    dir_path = os.path.join('logs', 'ding')
+    dir_path = os.path.join('logs')
     exp_dirs = [d for d in os.listdir(dir_path) if d.startswith(exp_dir)]
     # get datetime of all exp_dirs
     exp_times = [d[d.find('M') + 1:] for d in exp_dirs]

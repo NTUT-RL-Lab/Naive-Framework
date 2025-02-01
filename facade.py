@@ -28,11 +28,20 @@ class Facade(Wrapper):
         self.blend = director.blend
         self._reward_space = gym.spaces.Box(
             low=0.0, high=1.0, shape=(1, ), dtype=np.float32)
+        self._observation_space = gym.spaces.Box(
+            low=0, high=255, shape=(4, 84, 84), dtype=np.float32)
+        self._frame_stack = 4
+        self._frames = np.zeros(
+            self._observation_space.shape, dtype=np.float32)
         super().__init__(envs[0])
 
     @property
     def reward_space(self):
         return self._reward_space
+
+    @property
+    def observation_space(self):
+        return self._observation_space
 
     def switch_env(self, index: int) -> None:
         """Switches the environment to the one at the index
@@ -55,9 +64,12 @@ class Facade(Wrapper):
             observations, rewards, terminateds, truncateds, infos = [], [], [], [], []
             for index in range(len(self.envs)):
                 self.switch_env(index)
-                observation, reward, terminated, truncated, info = super().step(
-                    self.env.map_action(action))
-                observations.append(observation)
+                for _ in range(self._frame_stack):
+                    observation, reward, terminated, truncated, info = super().step(
+                        self.env.map_action(action))
+                    self._frames = np.roll(self._frames, shift=-1, axis=0)
+                    self._frames[-1, :, :] = observation
+                observations.append(self._frames)
                 rewards.append(self.env.reward(reward))
                 terminateds.append(terminated)
                 truncateds.append(truncated)
@@ -68,11 +80,13 @@ class Facade(Wrapper):
             truncated = np.min(truncateds) != 0
             info = {k: np.mean([i[k] for i in infos]) for k in infos[0]}
             return observation, reward, terminated, truncated, info
-        observation, reward, terminated, truncated, info = super().step(
-            self.env.map_action(action))
-        # apply reward weights
+        for _ in range(self._frame_stack):
+            observation, reward, terminated, truncated, info = super().step(
+                self.env.map_action(action))
+            self._frames = np.roll(self._frames, shift=-1, axis=0)
+            self._frames[-1, :, :] = observation
+        observation = self._frames
         reward = self.env.reward(reward)
-
         index,  = self.director.update(
             observation, reward, terminated, truncated, info)
         self.switch_env(index)
@@ -85,11 +99,24 @@ class Facade(Wrapper):
             for index in range(len(self.envs)):
                 self.switch_env(index)
                 obs, info = super().reset(seed=seed, options=options)
-                observations.append(obs)
+                self._frames = np.zeros(
+                    self._observation_space.shape, dtype=np.float32)
+                for _ in range(self._frame_stack):
+                    observation, _ = super().step(self.env.map_action(0))
+                    self._frames = np.roll(self._frames, shift=-1, axis=0)
+                    self._frames[-1, :, :] = observation
+                observations.append(self._frames)
                 infos.append(info)
-            return np.mean(observations, axis=0), {k: np.mean([i[k] for i in infos]) for k in infos[0]}
-
+            observation = np.mean(observations, axis=0)
+            return observation, {k: np.mean([i[k] for i in infos]) for k in infos[0]}
         observation, infos = super().reset(seed=seed, options=options)
+        self._frames = np.zeros(
+            self._observation_space.shape, dtype=np.float32)
+        for _ in range(self._frame_stack):
+            observation, _ = super().step(self.env.map_action(0))
+            self._frames = np.roll(self._frames, shift=-1, axis=0)
+            self._frames[-1, :, :] = observation
+        observation = self._frames
         return observation, infos
 
     def close(self):
